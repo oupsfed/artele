@@ -23,7 +23,6 @@ async def cmd_start(message: types.Message):
                                    'last_name': user.last_name,
                                    'username': user.username
                                })
-    print(register)
     if register.status_code == HTTPStatus.BAD_REQUEST:
         logging.info(f'Пользователь {user.first_name} {user.last_name}'
                      f' chat_id - {user.id} нажал повторно /start')
