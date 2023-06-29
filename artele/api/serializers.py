@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from users.models import User
-from food.models import Food
+from food.models import Food, Cart
 from core.models import Message
 
 
@@ -28,6 +28,21 @@ class FoodSerializer(serializers.ModelSerializer):
             'weight',
             'price'
         )
+
+
+class CartSerializer(serializers.ModelSerializer):
+    user = UserSerializer()
+    food = FoodSerializer()
+
+    class Meta:
+        model = Cart
+        fields = (
+            'id',
+            'user',
+            'food',
+            'amount'
+        )
+        read_only_fields = ('amount',)
 
 
 class MessageSerializer(serializers.ModelSerializer):

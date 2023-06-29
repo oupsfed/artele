@@ -1,3 +1,4 @@
+import logging
 from http import HTTPStatus
 from typing import Optional
 
@@ -65,7 +66,10 @@ async def callbacks_show_food(
     builder = InlineKeyboardBuilder()
     builder.button(
         text=f'Добавить в корзину',
-        callback_data='add'
+        callback_data=MenuCallbackFactory(
+            action='add_to_cart',
+            food_id=food['id'],
+            page=callback_data.page)
     )
     builder.button(
         text='Назад',
@@ -117,14 +121,14 @@ async def callbacks_show_page(
             text="Назад ⬅️",
             callback_data=MenuCallbackFactory(
                 action='show_page',
-                page=page-1)
+                page=page - 1)
         )
     if answer['next']:
         builder.button(
             text="Вперед ➡️",
             callback_data=MenuCallbackFactory(
                 action='show_page',
-                page=page+1)
+                page=page + 1)
         )
     builder.adjust(1)
     await callback.message.answer(
@@ -132,3 +136,37 @@ async def callbacks_show_page(
         reply_markup=builder.as_markup()
     )
     await callback.message.delete()
+
+
+@router.callback_query(MenuCallbackFactory.filter(F.action == 'add_to_cart'))
+async def callbacks_add_to_cart(
+        callback: types.CallbackQuery,
+        callback_data: MenuCallbackFactory
+):
+    user = callback.from_user
+    data = {
+        'user': user.id,
+        'food': callback_data.food_id
+    }
+    answer = post_api_answer('cart/',
+                             data=data)
+    builder = InlineKeyboardBuilder()
+    builder.button(
+        text='Назад',
+        callback_data=MenuCallbackFactory(
+            action='show_page',
+            page=callback_data.page)
+    )
+    builder.adjust(1)
+    await callback.message.delete()
+    if answer.status_code == HTTPStatus.CREATED:
+        logging.info(f'{user.first_name} {user.last_name} '
+                     f'chat_id - {user.id}: добавил товар в корзину')
+        text = 'Товар успешно добавлен в корзину'
+    else:
+        logging.error(f'Произошла ошибка при добавлении товара в корзину:'
+                      f'{data} \n {answer.json()}')
+        text = 'Произошла ошибка при добавлении товара в корзину'
+
+    await callback.message.answer(text,
+                                  reply_markup=builder.as_markup())

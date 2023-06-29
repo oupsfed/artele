@@ -34,7 +34,7 @@ async def cmd_start(message: types.Message):
     builder = ReplyKeyboardBuilder()
     builder.row(
         types.KeyboardButton(text="Меню"),
-        types.KeyboardButton(text="Корзина"),
+        types.KeyboardButton(text='Корзина'),
     )
     builder.row(
         types.KeyboardButton(text="Информация"),
