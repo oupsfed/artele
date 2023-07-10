@@ -9,6 +9,7 @@ from aiogram.utils.keyboard import ReplyKeyboardBuilder
 from utils import (check_permissions, delete_api_answer, get_api_answer,
                    post_api_answer)
 
+from middlewares.role import is_admin
 
 router = Router()
 
@@ -37,8 +38,13 @@ async def cmd_start(message: types.Message):
         types.KeyboardButton(text='Корзина'),
     )
     builder.row(
+        types.KeyboardButton(text="Заказ"),
         types.KeyboardButton(text="Информация"),
     )
+    if is_admin(user.id):
+        builder.row(
+            types.KeyboardButton(text="Настройки бота"),
+        )
 
     await message.answer(answer['text'],
                          parse_mode='HTML',
@@ -53,4 +59,3 @@ async def user_blocked_bot(event: ChatMemberUpdated):
                  f'{event.from_user.last_name} chat_id - {event.from_user.id}'
                  f' заблокировал бота')
     delete_api_answer(f'users/{event.from_user.id}')
-

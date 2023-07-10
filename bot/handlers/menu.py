@@ -39,7 +39,7 @@ async def menu(message: types.Message):
         )
     if answer['next']:
         builder.button(
-            text="➡️",
+            text="Вперед ➡️",
             callback_data=MenuCallbackFactory(
                 action='show_page',
                 page=2)
@@ -108,6 +108,7 @@ async def callbacks_show_page(
     answer = answer.json()
     food_list = answer['results']
     builder = InlineKeyboardBuilder()
+    rows = []
     for food in food_list:
         builder.button(
             text=f"{food['name']} - {food['price']} ₽",
@@ -116,6 +117,8 @@ async def callbacks_show_page(
                 food_id=food['id'],
                 page=page)
         )
+        rows.append(1)
+    page_buttons = 0
     if answer['previous']:
         builder.button(
             text="Назад ⬅️",
@@ -123,6 +126,7 @@ async def callbacks_show_page(
                 action='show_page',
                 page=page - 1)
         )
+        page_buttons += 1
     if answer['next']:
         builder.button(
             text="Вперед ➡️",
@@ -130,7 +134,9 @@ async def callbacks_show_page(
                 action='show_page',
                 page=page + 1)
         )
-    builder.adjust(1)
+        page_buttons += 1
+    rows.append(page_buttons)
+    builder.adjust(*rows)
     await callback.message.answer(
         main_message['text'],
         reply_markup=builder.as_markup()

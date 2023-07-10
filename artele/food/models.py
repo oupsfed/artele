@@ -33,5 +33,6 @@ class Order(models.Model):
     status = models.CharField(max_length=256,
                               choices=[('IP', 'in_progress'),
                                        ('D', 'done'),
-                                       ('C', 'cancelled')])
+                                       ('C', 'cancelled')],
+                              default='IP')
 

@@ -1,4 +1,5 @@
 import json
+import logging
 
 import requests
 from requests import Response
@@ -26,6 +27,8 @@ def get_api_answer(endpoint: str,
         headers=HEADERS,
         params=params
     )
+    if answer.status_code != 200:
+        logging.error(f'Запрос к {endpoint} отклонен')
     return answer
 
 

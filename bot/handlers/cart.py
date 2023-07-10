@@ -18,21 +18,26 @@ router = Router()
 class CartCallbackFactory(CallbackData, prefix='menu'):
     action: str
     cart_id: Optional[int]
+    page: Optional[int]
 
 
 @router.message(Text('Корзина'))
 async def menu(message: types.Message):
     main_message = get_api_answer('message/cart/')
     main_message = main_message.json()
-    answer = get_api_answer(f'cart/{message.from_user.id}')
+    answer = get_api_answer(
+        'cart/',
+        params={
+            'user__telegram_chat_id': message.from_user.id
+        })
     answer = answer.json()
-    cart_list = answer
+    cart_list = answer['results']
     builder = InlineKeyboardBuilder()
-    cart_sum = 0
+    cart_sum = get_api_answer(f'cart/{message.from_user.id}/sum/')
+    cart_sum = cart_sum.json()
     rows = []
     for cart in cart_list:
         food = cart['food']
-        cart_sum += food['price'] * cart['amount']
         builder.button(
             text=f"{food['name']} - {cart['amount']} шт.",
             callback_data=CartCallbackFactory(
@@ -44,15 +49,24 @@ async def menu(message: types.Message):
             text=f"-1 шт.",
             callback_data=CartCallbackFactory(
                 action='delete',
-                cart_id=cart['id'])
+                cart_id=cart['id'],
+                page=1)
         )
         builder.button(
             text=f"+1 шт.",
             callback_data=CartCallbackFactory(
                 action='add',
-                cart_id=cart['id'])
+                cart_id=cart['id'],
+                page=1)
         )
         rows.append(2)
+    if answer['next']:
+        builder.button(
+            text="Вперед ➡️",
+            callback_data=CartCallbackFactory(
+                action='cart',
+                page=2)
+        )
     builder.button(
         text=f"Заказать - {cart_sum} ₽",
         callback_data=CartCallbackFactory(
@@ -73,35 +87,62 @@ async def callbacks_show_cart(
 ):
     main_message = get_api_answer('message/cart/')
     main_message = main_message.json()
-    answer = get_api_answer(f'cart/{callback.from_user.id}')
+    page = callback_data.page
+    answer = get_api_answer(
+        'cart/',
+        params={
+            'user__telegram_chat_id': callback.from_user.id,
+            'page': page
+        })
     answer = answer.json()
-    cart_list = answer
+    cart_list = answer['results']
     builder = InlineKeyboardBuilder()
-    cart_sum = 0
+    cart_sum = get_api_answer(f'cart/{callback.from_user.id}/sum/')
+    cart_sum = cart_sum.json()
     rows = []
     for cart in cart_list:
         food = cart['food']
-        cart_sum += food['price'] * cart['amount']
         builder.button(
             text=f"{food['name']} - {cart['amount']} шт.",
             callback_data=CartCallbackFactory(
                 action='show',
-                cart_id=food['id'])
+                cart_id=food['id'],
+                page=page)
         )
         rows.append(1)
         builder.button(
             text=f"-1 шт.",
             callback_data=CartCallbackFactory(
                 action='delete',
-                cart_id=cart['id'])
+                cart_id=cart['id'],
+                page=page)
         )
         builder.button(
             text=f"+1 шт.",
             callback_data=CartCallbackFactory(
                 action='add',
-                cart_id=cart['id'])
+                cart_id=cart['id'],
+                page=page)
         )
         rows.append(2)
+    page_buttons = 0
+    if answer['previous']:
+        builder.button(
+            text="Назад ⬅️",
+            callback_data=CartCallbackFactory(
+                action='cart',
+                page=page - 1)
+        )
+        page_buttons += 1
+    if answer['next']:
+        builder.button(
+            text="Вперед ➡️",
+            callback_data=CartCallbackFactory(
+                action='cart',
+                page=page + 1)
+        )
+        page_buttons += 1
+    rows.append(page_buttons)
     builder.button(
         text=f"Заказать - {cart_sum} ₽",
         callback_data=CartCallbackFactory(
@@ -131,7 +172,8 @@ async def callbacks_show_cart(
     builder.button(
         text='Назад',
         callback_data=CartCallbackFactory(
-            action='cart'
+            action='cart',
+            page=callback_data.page
         ))
     builder.adjust(1)
     if food['image']:
@@ -150,42 +192,78 @@ async def callbacks_show_cart(
 
 
 @router.callback_query(CartCallbackFactory.filter(F.action == 'add'))
-async def callbacks_show_cart(
+async def callbacks_add_to_cart(
         callback: types.CallbackQuery,
         callback_data: CartCallbackFactory
 ):
     post_api_answer(f'cart/{callback_data.cart_id}/add/', data={})
     main_message = get_api_answer('message/cart/')
     main_message = main_message.json()
-    answer = get_api_answer(f'cart/{callback.from_user.id}')
+    page = callback_data.page
+    answer = get_api_answer(
+        'cart/',
+        params={
+            'user__telegram_chat_id': callback.from_user.id,
+            'page': page
+        })
+    if answer.status_code == HTTPStatus.NOT_FOUND:
+        page = 1
+        answer = get_api_answer(
+            'cart/',
+            params={
+                'user__telegram_chat_id': callback.from_user.id,
+            })
+    print(page)
     answer = answer.json()
-    cart_list = answer
+    cart_list = answer['results']
     builder = InlineKeyboardBuilder()
-    cart_sum = 0
+    cart_sum = get_api_answer(f'cart/{callback.from_user.id}/sum/')
+    cart_sum = cart_sum.json()
     rows = []
     for cart in cart_list:
         food = cart['food']
-        cart_sum += food['price'] * cart['amount']
         builder.button(
             text=f"{food['name']} - {cart['amount']} шт.",
             callback_data=CartCallbackFactory(
                 action='show',
-                cart_id=food['id'])
+                cart_id=food['id'],
+                page=page)
         )
         rows.append(1)
         builder.button(
             text=f"-1 шт.",
             callback_data=CartCallbackFactory(
                 action='delete',
-                cart_id=cart['id'])
+                cart_id=cart['id'],
+                page=page)
         )
         builder.button(
             text=f"+1 шт.",
             callback_data=CartCallbackFactory(
                 action='add',
-                cart_id=cart['id'])
+                cart_id=cart['id'],
+                page=page)
         )
         rows.append(2)
+    page_buttons = 0
+    if answer['previous']:
+        builder.button(
+            text="Назад ⬅️",
+            callback_data=CartCallbackFactory(
+                action='cart',
+                page=page - 1)
+        )
+        page_buttons += 1
+    if answer['next']:
+        builder.button(
+            text="Вперед ➡️",
+            callback_data=CartCallbackFactory(
+                action='cart',
+                page=page + 1)
+        )
+        page_buttons += 1
+    if page_buttons > 0:
+        rows.append(page_buttons)
     builder.button(
         text=f"Заказать - {cart_sum} ₽",
         callback_data=CartCallbackFactory(
@@ -201,42 +279,78 @@ async def callbacks_show_cart(
 
 
 @router.callback_query(CartCallbackFactory.filter(F.action == 'delete'))
-async def callbacks_show_cart(
+async def callbacks_delete_cart(
         callback: types.CallbackQuery,
         callback_data: CartCallbackFactory
 ):
     post_api_answer(f'cart/{callback_data.cart_id}/delete/', data={})
     main_message = get_api_answer('message/cart/')
     main_message = main_message.json()
-    answer = get_api_answer(f'cart/{callback.from_user.id}')
+    page = callback_data.page
+    answer = get_api_answer(
+        'cart/',
+        params={
+            'user__telegram_chat_id': callback.from_user.id,
+            'page': page
+        })
+    if answer.status_code == HTTPStatus.NOT_FOUND:
+        page = 1
+        answer = get_api_answer(
+            'cart/',
+            params={
+                'user__telegram_chat_id': callback.from_user.id,
+            })
     answer = answer.json()
-    cart_list = answer
+
+    cart_list = answer['results']
     builder = InlineKeyboardBuilder()
-    cart_sum = 0
+    cart_sum = get_api_answer(f'cart/{callback.from_user.id}/sum/')
+    cart_sum = cart_sum.json()
     rows = []
     for cart in cart_list:
         food = cart['food']
-        cart_sum += food['price'] * cart['amount']
         builder.button(
             text=f"{food['name']} - {cart['amount']} шт.",
             callback_data=CartCallbackFactory(
                 action='show',
-                cart_id=food['id'])
+                cart_id=food['id'],
+                page=page)
         )
         rows.append(1)
         builder.button(
             text=f"-1 шт.",
             callback_data=CartCallbackFactory(
                 action='delete',
-                cart_id=cart['id'])
+                cart_id=cart['id'],
+                page=page)
         )
         builder.button(
             text=f"+1 шт.",
             callback_data=CartCallbackFactory(
                 action='add',
-                cart_id=cart['id'])
+                cart_id=cart['id'],
+                page=page)
         )
         rows.append(2)
+    page_buttons = 0
+    if answer['previous']:
+        builder.button(
+            text="Назад ⬅️",
+            callback_data=CartCallbackFactory(
+                action='cart',
+                page=page - 1)
+        )
+        page_buttons += 1
+    if answer['next']:
+        builder.button(
+            text="Вперед ➡️",
+            callback_data=CartCallbackFactory(
+                action='cart',
+                page=page + 1)
+        )
+        page_buttons += 1
+    if page_buttons > 0:
+        rows.append(page_buttons)
     builder.button(
         text=f"Заказать - {cart_sum} ₽",
         callback_data=CartCallbackFactory(
@@ -248,4 +362,17 @@ async def callbacks_show_cart(
     await callback.message.answer(
         main_message['text'],
         reply_markup=builder.as_markup()
+    )
+
+
+@router.callback_query(CartCallbackFactory.filter(F.action == 'order'))
+async def callbacks_show_cart(
+        callback: types.CallbackQuery,
+        callback_data: CartCallbackFactory
+):
+    answer = post_api_answer(f'cart/{callback.from_user.id}/order/',
+                             data={})
+    await callback.message.delete()
+    await callback.message.answer(
+        answer.json()
     )
