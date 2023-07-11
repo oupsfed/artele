@@ -11,6 +11,8 @@ from utils import (check_permissions, delete_api_answer, get_api_answer,
 
 from middlewares.role import is_admin
 
+from bot.middlewares.role import is_guest
+
 router = Router()
 
 
@@ -32,13 +34,16 @@ async def cmd_start(message: types.Message):
                      f' {user.last_name} chat_id - {user.id}')
     answer = get_api_answer('message/start/')
     answer = answer.json()
+    btn_text = 'Заказ'
+    if is_guest(user.id):
+        btn_text = 'Заявка'
     builder = ReplyKeyboardBuilder()
     builder.row(
         types.KeyboardButton(text="Меню"),
         types.KeyboardButton(text='Корзина'),
     )
     builder.row(
-        types.KeyboardButton(text="Заказ"),
+        types.KeyboardButton(text=btn_text),
         types.KeyboardButton(text="Информация"),
     )
     if is_admin(user.id):

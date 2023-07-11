@@ -97,3 +97,14 @@ def delete_api_answer(endpoint: str) -> Response:
 def check_permissions(user_id: int) -> bool:
     answer = get_api_answer(f'users/{user_id}')
     return answer.json()['is_staff']
+
+
+def check_phone_number(number: str) -> str:
+    replace_data = [
+        '+', ' ', '(', ')', '-'
+    ]
+    for replace_symbol in replace_data:
+        number = number.replace(replace_symbol, '')
+    if number[0] == '7':
+        number[0] = '8'
+    return number

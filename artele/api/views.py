@@ -16,6 +16,8 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     lookup_field = 'telegram_chat_id'
+    filter_backends = (DjangoFilterBackend,)
+    filterset_fields = ('request_for_access',)
 
 
 class FoodViewSet(viewsets.ModelViewSet):

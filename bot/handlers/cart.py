@@ -12,6 +12,8 @@ from magic_filter import F
 from utils import (check_permissions, delete_api_answer, get_api_answer,
                    post_api_answer)
 
+from bot.middlewares.role import is_guest
+
 router = Router()
 
 
@@ -370,9 +372,15 @@ async def callbacks_show_cart(
         callback: types.CallbackQuery,
         callback_data: CartCallbackFactory
 ):
-    answer = post_api_answer(f'cart/{callback.from_user.id}/order/',
-                             data={})
+    if is_guest(callback.from_user.id):
+        answer = (
+            'Недостаточно прав для оформления заказа \n'
+            'Подайте заявку на доступ к заказам'
+        )
+    else:
+        answer = post_api_answer(f'cart/{callback.from_user.id}/order/',
+                                 data={}).json()
     await callback.message.delete()
     await callback.message.answer(
-        answer.json()
+        answer
     )

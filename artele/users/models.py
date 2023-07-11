@@ -5,6 +5,9 @@ from django.db import models
 
 
 class User(AbstractUser):
+    name = models.CharField(max_length=256, null=True, blank=True)
+    phone_number = models.CharField(max_length=12, blank=True, null=True)
+    request_for_access = models.BooleanField(default=False)
     username = models.CharField(max_length=100,
                                 blank=True,
                                 null=True
