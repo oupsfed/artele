@@ -17,9 +17,8 @@ from django.core.files.base import ContentFile
 
 from utils import get_api_answer, post_api_answer, delete_api_answer, patch_api_answer
 
-from middlewares.role import IsAdminMessageMiddleware
 
-from bot.middlewares.role import is_admin
+from bot.middlewares.role import IsAdminMessageMiddleware
 
 FOOD_COL = {
     'name': 'название',

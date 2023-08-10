@@ -106,5 +106,17 @@ def check_phone_number(number: str) -> str:
     for replace_symbol in replace_data:
         number = number.replace(replace_symbol, '')
     if number[0] == '7':
-        number[0] = '8'
+        number = f'8{number[1:]}'
     return number
+
+
+async def send_message_to_admin(bot, text):
+    admin_data = get_api_answer('admin/').json()
+    for admin in admin_data:
+        try:
+            await bot.send_message(
+                chat_id=admin['telegram_chat_id'],
+                text=text
+            )
+        except Exception as error:
+            logging.error(f'Произошла ошибка при отправке сообщения пользователю \n {error}')

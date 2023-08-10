@@ -1,6 +1,12 @@
+import requests
 from django.db.models import Sum
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
+import fpdf
+from drf_pdf.renderer import PDFRenderer
+from drf_pdf.response import PDFFileResponse
+from fpdf import FPDF
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
@@ -17,6 +23,24 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
     lookup_field = 'telegram_chat_id'
     filter_backends = (DjangoFilterBackend,)
+    filterset_fields = ('request_for_access', 'role')
+
+
+class AuthorizedUserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.filter(role='USER')
+    serializer_class = UserSerializer
+    pagination_class = None
+    lookup_field = 'telegram_chat_id'
+    filter_backends = (DjangoFilterBackend,)
+    filterset_fields = ('request_for_access',)
+
+
+class AdminUserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.filter(role='ADMIN')
+    serializer_class = UserSerializer
+    pagination_class = None
+    lookup_field = 'telegram_chat_id'
+    filter_backends = (DjangoFilterBackend,)
     filterset_fields = ('request_for_access',)
 
 
@@ -29,7 +53,8 @@ class CartViewSet(viewsets.ModelViewSet):
     queryset = Cart.objects.all()
     serializer_class = CartSerializer
     filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ('user__telegram_chat_id',)
+    filterset_fields = ('user__telegram_chat_id',
+                        'food__id')
     pagination_class = PageNumberPagination
     pagination_class.page_size = 3
 
@@ -135,6 +160,70 @@ class OrderViewSet(viewsets.ModelViewSet):
             order_pos.status = 'C'
             order_pos.save()
         return Response('Успешно удалено', status=status.HTTP_200_OK)
+
+
+class OrderListViewSet(viewsets.ModelViewSet):
+    queryset = Order.objects.all()
+    serializer_class = OrderSerializer
+    pagination_class = None
+    filter_backends = (DjangoFilterBackend,)
+    filterset_fields = ('status', 'user__name')
+
+    @action(
+        methods=['GET'],
+        detail=False,
+        url_path='download',
+    )
+    def download(self, request):
+        order_list = Order.objects.filter(status='IP')
+        user_list = {}
+        food_list = {}
+        for order in order_list:
+            if order.user.name not in user_list:
+                user_list[order.user.name] = {}
+            if order.food.name not in user_list[order.user.name]:
+                user_list[order.user.name][order.food.name] = 0
+            user_list[order.user.name][order.food.name] += order.amount
+            if order.food.name not in food_list:
+                food_list[order.food.name] = 0
+            food_list[order.food.name] += order.amount
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.add_font('DejaVu', '', 'DejaVuSansCondensed.ttf', uni=True)
+        pdf.set_font('DejaVu', '', 18)
+        pdf.cell(200, 10, txt="Список заказов", ln=1, align="C")
+        pdf.cell(200, 10, txt="Всего", ln=1, align="C")
+
+        pdf.set_font('DejaVu', '', 14)
+        pdf.cell(20, 10, f'№ п/п', 1, align="C")
+        pdf.cell(120, 10, 'Название', 1, align="C")
+        pdf.cell(40, 10, f'Количество', 1, ln=1, align="C")
+        i = 0
+        for name, amount in food_list.items():
+            i += 1
+            pdf.cell(20, 10, f'{i}.', 1, align="C")
+            pdf.cell(120, 10, name, 1, align="C")
+            pdf.cell(40, 10, f'{amount} шт.', 1, ln=1, align="C")
+
+        pdf.set_font('DejaVu', '', 18)
+        pdf.cell(200, 20, txt="По каждому покупателю", ln=1, align="C")
+        pdf.set_font('DejaVu', '', 14)
+        for user_name, food_list in user_list.items():
+            i = 0
+            pdf.cell(200, 10, txt=user_name, ln=1, align="C")
+            pdf.cell(20, 10, f'№ п/п', 1, align="C")
+            pdf.cell(120, 10, 'Название', 1, align="C")
+            pdf.cell(40, 10, f'Количество', 1, ln=1, align="C")
+            for name, amount in food_list.items():
+                i += 1
+                pdf.cell(20, 10, f'{i}.', 1, align="C")
+                pdf.cell(120, 10, name, 1, align="C")
+                pdf.cell(40, 10, f'{amount} шт.', 1, ln=1, align="C")
+        pdf.output("media/order.pdf")
+        return Response({
+            'by_food': food_list,
+            'by_user': user_list
+        })
 
 
 class MessageViewSet(viewsets.ModelViewSet):

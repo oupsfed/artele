@@ -12,9 +12,9 @@ from aiogram.filters.callback_data import CallbackData
 from aiogram.utils.keyboard import InlineKeyboardBuilder, ReplyKeyboardBuilder
 from magic_filter import F
 from utils import get_api_answer, post_api_answer, delete_api_answer, patch_api_answer
-from middlewares.role import IsGuestMessageMiddleware
+from bot.middlewares.role import IsGuestMessageMiddleware
 
-from bot.utils import check_phone_number
+from bot.utils import check_phone_number, send_message_to_admin
 
 router = Router()
 router.message.middleware(IsGuestMessageMiddleware())
@@ -74,4 +74,6 @@ async def callbacks_edit_food_name_confirm(
         await message.answer(
             'Ваша заявка отправлена!'
         )
-        # TODO - отправка сообщения админу
+        await send_message_to_admin(
+            bot,
+            f'Появилась новая заявка от пользователя {data["name"]}')

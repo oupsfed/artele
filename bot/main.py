@@ -5,8 +5,10 @@ import os
 from aiogram import Bot, Dispatcher
 from dotenv import load_dotenv
 
-from handlers.admin_panel import settings, requests_for_access, edit_menu
-from handlers import start, menu, cart, order, access
+from bot.handlers.admin_panel import orders_list
+from handlers.admin_panel import settings, requests_for_access, edit_menu, user_list
+from bot.handlers.guest_panel import access
+from bot.handlers.user_panel import menu, order, start, cart
 
 load_dotenv()
 
@@ -24,7 +26,9 @@ async def main():
                        settings.router,
                        access.router,
                        edit_menu.router,
-                       requests_for_access.router)
+                       user_list.router,
+                       requests_for_access.router,
+                       orders_list.router)
     await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
 

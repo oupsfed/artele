@@ -4,7 +4,7 @@ from typing import Optional
 
 from aiogram.types import URLInputFile
 from aiogram.utils.markdown import hide_link
-from aiogram import Router, types
+from aiogram import Router, types, Bot
 from aiogram.filters import Command, Text
 from aiogram.filters.callback_data import CallbackData
 from aiogram.utils.keyboard import InlineKeyboardBuilder, ReplyKeyboardBuilder
@@ -13,6 +13,7 @@ from utils import (check_permissions, delete_api_answer, get_api_answer,
                    post_api_answer)
 
 from bot.middlewares.role import is_guest
+from bot.utils import send_message_to_admin
 
 router = Router()
 
@@ -370,7 +371,8 @@ async def callbacks_delete_cart(
 @router.callback_query(CartCallbackFactory.filter(F.action == 'order'))
 async def callbacks_show_cart(
         callback: types.CallbackQuery,
-        callback_data: CartCallbackFactory
+        callback_data: CartCallbackFactory,
+        bot: Bot
 ):
     if is_guest(callback.from_user.id):
         answer = (
@@ -379,8 +381,13 @@ async def callbacks_show_cart(
         )
     else:
         answer = post_api_answer(f'cart/{callback.from_user.id}/order/',
-                                 data={}).json()
+                                 data={})
+        if answer.status_code == HTTPStatus.CREATED:
+            await send_message_to_admin(
+                bot,
+                'Добавлен новый заказ'
+            )
     await callback.message.delete()
     await callback.message.answer(
-        answer
+        answer.json()
     )

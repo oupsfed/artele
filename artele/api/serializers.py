@@ -85,6 +85,22 @@ class OrderSerializer(serializers.ModelSerializer):
         read_only_fields = ('status',)
 
 
+class OrderListSerializer(serializers.ModelSerializer):
+    user = UserSerializer()
+    food = FoodSerializer()
+
+    class Meta:
+        model = Order
+        fields = (
+            'id',
+            'user',
+            'food',
+            'amount',
+            'status'
+        )
+        read_only_fields = ('status',)
+
+
 class MessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Message
