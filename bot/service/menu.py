@@ -1,12 +1,10 @@
-import logging
-from http import HTTPStatus
 from typing import Optional
 
 from aiogram.filters.callback_data import CallbackData
-from aiogram.types import URLInputFile, InputFile
+from aiogram.types import URLInputFile
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-from bot.utils import get_api_answer, post_api_answer
+from bot.utils import get_api_answer
 
 
 class MenuCallbackFactory(CallbackData, prefix='menu'):
@@ -95,14 +93,14 @@ async def food_builder(user_id: int,
         )
     )
     builder.button(
-        text=f'➖',
+        text='➖',
         callback_data=MenuCallbackFactory(
             action='remove_from_cart',
             food_id=food_id
         )
     )
     builder.button(
-        text=f'➕',
+        text='➕',
         callback_data=MenuCallbackFactory(
             action='add_to_cart',
             food_id=food_id
@@ -117,39 +115,3 @@ async def food_builder(user_id: int,
     )
     builder.adjust(1, 2, 1)
     return builder
-
-
-async def food_add_to_cart(user_id: int,
-                           food_id: int):
-    data = {
-        'user': user_id,
-        'food': food_id
-    }
-    answer = post_api_answer('cart/',
-                             data=data)
-    if answer.status_code == HTTPStatus.CREATED:
-        logging.info('chat_id - {user.id}: добавил товар в корзину')
-    else:
-        logging.error(f'Произошла ошибка при добавлении товара в корзину:'
-                      f'{data} \n {answer.json()}')
-
-
-async def food_remove_from_cart(user_id: int,
-                                food_id: int):
-    data = {
-        'user__telegram_chat_id': user_id,
-        'food__id': food_id
-    }
-    answer = get_api_answer('cart/',
-                            params=data)
-    answer = answer.json()
-    if answer['count'] != 1:
-        logging.info(f'Ошибка при запросе к корзине {user_id}')
-        return
-    cart_id = answer['results'][0]['id']
-    answer = post_api_answer(f'cart/{cart_id}/delete/', data={})
-    if answer.status_code == HTTPStatus.OK:
-        logging.info(f'chat_id - {user_id}: удалил товар из корзины')
-    else:
-        logging.error(f'Произошла ошибка при удалении товара из корзин:'
-                      f'{data} \n {answer.json()}')

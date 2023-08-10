@@ -1,24 +1,15 @@
-import base64
-import io
 import logging
-import os
 from http import HTTPStatus
 from typing import Optional
 
-import requests
-from aiogram import Router, types, F, Bot
+from aiogram import Bot, F, Router, types
 from aiogram.filters import Text
 from aiogram.filters.callback_data import CallbackData
-from aiogram.fsm.context import FSMContext
-from aiogram.fsm.state import StatesGroup, State
-from aiogram.types import Message, URLInputFile
-from aiogram.utils.keyboard import InlineKeyboardBuilder, ReplyKeyboardBuilder
-from django.core.files.base import ContentFile
-
-from utils import get_api_answer, post_api_answer, delete_api_answer, patch_api_answer
-
+from aiogram.fsm.state import State, StatesGroup
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from bot.middlewares.role import IsAdminMessageMiddleware
+from bot.utils import get_api_answer, patch_api_answer
 
 FOOD_COL = {
     'name': 'название',
@@ -57,7 +48,6 @@ async def access_list(message: types.Message):
                                 'request_for_access': True
                             }).json()
     requests_data = answer['results']
-    print(requests_data)
     builder = InlineKeyboardBuilder()
     for user in requests_data:
         builder.button(
@@ -93,7 +83,7 @@ async def callbacks_show_request(
             )
     builder = InlineKeyboardBuilder()
     builder.button(
-        text=f'Одобрить',
+        text='Одобрить',
         callback_data=AccessCallbackFactory(
             action='request_accept',
             user_id=user['telegram_chat_id'],
@@ -150,7 +140,7 @@ async def callbacks_accepct_request(
         main_message += text
     builder = InlineKeyboardBuilder()
     builder.button(
-        text=f'Назад',
+        text='Назад',
         callback_data=AccessCallbackFactory(
             action='show_page',
             page=callback_data.page)
@@ -189,7 +179,7 @@ async def callbacks_accepct_request(
         main_message += text
     builder = InlineKeyboardBuilder()
     builder.button(
-        text=f'Назад',
+        text='Назад',
         callback_data=AccessCallbackFactory(
             action='show_page',
             page=callback_data.page)

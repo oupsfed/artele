@@ -1,24 +1,17 @@
-import base64
-import io
 import logging
-import os
 from http import HTTPStatus
 from typing import Optional
 
-import requests
-from aiogram import Router, types, F, Bot
+from aiogram import Bot, F, Router, types
 from aiogram.filters import Text
 from aiogram.filters.callback_data import CallbackData
 from aiogram.fsm.context import FSMContext
-from aiogram.fsm.state import StatesGroup, State
-from aiogram.types import Message, URLInputFile
-from aiogram.utils.keyboard import InlineKeyboardBuilder, ReplyKeyboardBuilder
-from django.core.files.base import ContentFile
-
-from utils import get_api_answer, post_api_answer, delete_api_answer, patch_api_answer
-
+from aiogram.fsm.state import State, StatesGroup
+from aiogram.types import Message
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from bot.middlewares.role import IsAdminMessageMiddleware
+from bot.utils import get_api_answer, patch_api_answer
 
 router = Router()
 router.message.middleware(IsAdminMessageMiddleware())
@@ -94,7 +87,7 @@ async def callbacks_show_request(
             )
     builder = InlineKeyboardBuilder()
     builder.button(
-        text=f'Отправить сообщение',
+        text='Отправить сообщение',
         callback_data=UserListCallbackFactory(
             action='send_message',
             user_id=user['telegram_chat_id'],
@@ -151,7 +144,7 @@ async def callbacks_accepct_request(
         main_message += text
     builder = InlineKeyboardBuilder()
     builder.button(
-        text=f'Назад',
+        text='Назад',
         callback_data=UserListCallbackFactory(
             action='show_page',
             page=callback_data.page)
@@ -220,7 +213,7 @@ async def callbacks_send_message(
         state: FSMContext
 ):
     await callback.message.answer(
-        text=f'Введите сообщение',
+        text='Введите сообщение',
     )
     await state.update_data(user_id=callback_data.user_id)
     await state.set_state(SendMessage.direct)
@@ -233,7 +226,7 @@ async def callbacks_send_message(
         state: FSMContext
 ):
     await callback.message.answer(
-        text=f'Введите сообщение',
+        text='Введите сообщение',
     )
     await state.set_state(SendMessage.all)
 

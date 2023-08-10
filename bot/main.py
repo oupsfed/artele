@@ -4,11 +4,12 @@ import os
 
 from aiogram import Bot, Dispatcher
 from dotenv import load_dotenv
+from handlers.admin_panel import (edit_menu, requests_for_access, settings,
+                                  user_list)
 
 from bot.handlers.admin_panel import orders_list
-from handlers.admin_panel import settings, requests_for_access, edit_menu, user_list
 from bot.handlers.guest_panel import access
-from bot.handlers.user_panel import menu, order, start, cart
+from bot.handlers.user_panel import cart, menu, order, start
 
 load_dotenv()
 

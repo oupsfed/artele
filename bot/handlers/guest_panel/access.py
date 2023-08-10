@@ -1,20 +1,11 @@
-import logging
-from http import HTTPStatus
-from typing import Optional
-
-from aiogram.fsm.state import StatesGroup, State
-from aiogram.types import Message, URLInputFile
-from aiogram.utils.markdown import hide_link
-from aiogram import Router, types, Bot
+from aiogram import Bot, Router, types
+from aiogram.filters import Text
 from aiogram.fsm.context import FSMContext
-from aiogram.filters import Command, Text
-from aiogram.filters.callback_data import CallbackData
-from aiogram.utils.keyboard import InlineKeyboardBuilder, ReplyKeyboardBuilder
-from magic_filter import F
-from utils import get_api_answer, post_api_answer, delete_api_answer, patch_api_answer
-from bot.middlewares.role import IsGuestMessageMiddleware
+from aiogram.fsm.state import State, StatesGroup
+from aiogram.types import Message
 
-from bot.utils import check_phone_number, send_message_to_admin
+from bot.middlewares.role import IsGuestMessageMiddleware
+from bot.utils import check_phone_number, send_message_to_admin, patch_api_answer
 
 router = Router()
 router.message.middleware(IsGuestMessageMiddleware())

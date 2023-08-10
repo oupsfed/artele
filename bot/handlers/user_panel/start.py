@@ -2,16 +2,13 @@ import logging
 from http import HTTPStatus
 
 from aiogram import Router, types
-from aiogram.filters import Command, ChatMemberUpdatedFilter, KICKED
+from aiogram.filters import KICKED, ChatMemberUpdatedFilter, Command
 from aiogram.types import ChatMemberUpdated
 from aiogram.utils.keyboard import ReplyKeyboardBuilder
 
-from utils import (check_permissions, delete_api_answer, get_api_answer,
-                   post_api_answer)
 
-from middlewares.role import is_admin
-
-from bot.middlewares.role import is_guest
+from bot.middlewares.role import is_guest, is_admin
+from bot.utils import post_api_answer, get_api_answer, delete_api_answer
 
 router = Router()
 

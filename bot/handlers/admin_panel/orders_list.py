@@ -1,23 +1,14 @@
-import base64
-import io
-import logging
-import os
-from http import HTTPStatus
 from typing import Optional
 
-import requests
-from aiogram import Router, types, F, Bot
+from aiogram import Bot, F, Router, types
 from aiogram.filters import Text
 from aiogram.filters.callback_data import CallbackData
-from aiogram.fsm.context import FSMContext
-from aiogram.fsm.state import StatesGroup, State
-from aiogram.types import Message, URLInputFile, InputFile
-from aiogram.utils.keyboard import InlineKeyboardBuilder, ReplyKeyboardBuilder
-from django.core.files.base import ContentFile
-
-from utils import get_api_answer, post_api_answer, delete_api_answer, patch_api_answer
+from aiogram.fsm.state import State, StatesGroup
+from aiogram.types import URLInputFile
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from bot.middlewares.role import IsAdminMessageMiddleware
+from bot.utils import get_api_answer
 
 router = Router()
 router.message.middleware(IsAdminMessageMiddleware())
@@ -224,4 +215,3 @@ async def callbacks_show_food(
         text,
         reply_markup=builder.as_markup()
     )
-

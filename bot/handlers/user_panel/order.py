@@ -1,16 +1,10 @@
-import logging
-from http import HTTPStatus
-from typing import Optional
-
-from aiogram.types import URLInputFile
-from aiogram.utils.markdown import hide_link
 from aiogram import Router, types
-from aiogram.filters import Command, Text
+from aiogram.filters import Text
 from aiogram.filters.callback_data import CallbackData
-from aiogram.utils.keyboard import InlineKeyboardBuilder, ReplyKeyboardBuilder
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 from magic_filter import F
-from utils import (check_permissions, delete_api_answer, get_api_answer,
-                   post_api_answer)
+
+from bot.utils import get_api_answer, post_api_answer
 
 router = Router()
 
@@ -23,10 +17,9 @@ class OrderCallbackFactory(CallbackData, prefix='order'):
 async def order(message: types.Message):
     answer = get_api_answer(
         'order/',
-        params={
-              'status': 'IP',
-              'user__telegram_chat_id': message.from_user.id
-          })
+        params={'status': 'IP',
+                'user__telegram_chat_id': message.from_user.id}
+    )
     order_list = answer.json()
     builder = InlineKeyboardBuilder()
     text = 'Ваш заказ: \n'

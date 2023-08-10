@@ -1,19 +1,16 @@
 import base64
-import io
 import os
 from typing import Optional
 
-import requests
-from aiogram import Router, types, F, Bot
+from aiogram import Bot, F, Router, types
 from aiogram.filters import Text
 from aiogram.filters.callback_data import CallbackData
 from aiogram.fsm.context import FSMContext
-from aiogram.fsm.state import StatesGroup, State
+from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import Message, URLInputFile
-from aiogram.utils.keyboard import InlineKeyboardBuilder, ReplyKeyboardBuilder
-from django.core.files.base import ContentFile
-
-from utils import get_api_answer, post_api_answer, delete_api_answer, patch_api_answer
+from aiogram.utils.keyboard import InlineKeyboardBuilder
+from utils import (delete_api_answer, get_api_answer, patch_api_answer,
+                   post_api_answer)
 
 from bot.middlewares.role import IsAdminMessageMiddleware
 
@@ -72,7 +69,7 @@ async def finding_lots(message: types.Message):
                 page=2)
         )
     builder.button(
-        text=f"Добавить товар",
+        text="Добавить товар",
         callback_data=SettingsCallbackFactory(
             action='add_food',
             page=1)
@@ -98,7 +95,7 @@ async def callbacks_add_food_name(
             page=1)
     )
     await callback.message.answer(
-        text=f'Введите Название',
+        text='Введите Название',
         reply_markup=builder.as_markup()
     )
     await state.set_state(AddFood.name)
@@ -120,7 +117,7 @@ async def callbacks_edit_food_name_confirm(
             page=1)
     )
     await message.answer(
-        text=f'Введите Описание',
+        text='Введите Описание',
         reply_markup=builder.as_markup()
     )
     await state.set_state(AddFood.description)
@@ -142,7 +139,7 @@ async def callbacks_edit_food_name_confirm(
             page=1)
     )
     await message.answer(
-        text=f'Введите вес товара в граммах',
+        text='Введите вес товара в граммах',
         reply_markup=builder.as_markup()
     )
     await state.set_state(AddFood.weight)
@@ -164,7 +161,7 @@ async def callbacks_edit_food_name_confirm(
             page=1)
     )
     await message.answer(
-        text=f'Введите цену товара',
+        text='Введите цену товара',
         reply_markup=builder.as_markup()
     )
     await state.set_state(AddFood.price)
@@ -176,8 +173,7 @@ async def callbacks_edit_food_name_confirm(
         state: FSMContext,
         bot: Bot):
     await state.update_data(price=message.text)
-    data = await state.get_data()
-    print(data)
+    await state.get_data()
     builder = InlineKeyboardBuilder()
     builder.button(
         text='Отмена',
@@ -186,7 +182,7 @@ async def callbacks_edit_food_name_confirm(
             page=1)
     )
     await message.answer(
-        text=f'Добавьте фото товара',
+        text='Добавьте фото товара',
         reply_markup=builder.as_markup()
     )
     await state.set_state(AddFood.image)
@@ -276,7 +272,6 @@ async def callbacks_show_food(
         callback: types.CallbackQuery,
         callback_data: SettingsCallbackFactory
 ):
-    page = callback_data.page
     answer = get_api_answer(f'food/{callback_data.food_id}')
     food = answer.json()
     text = (f"<b>{food['name']}</b> \n"
@@ -286,13 +281,13 @@ async def callbacks_show_food(
             f"")
     builder = InlineKeyboardBuilder()
     builder.button(
-        text=f'Редактировать',
+        text='Редактировать',
         callback_data=SettingsCallbackFactory(
             action='edit_food_menu',
             food_id=food['id'])
     )
     builder.button(
-        text=f'Удалить',
+        text='Удалить',
         callback_data=SettingsCallbackFactory(
             action='delete_food',
             food_id=food['id'])
@@ -333,42 +328,42 @@ async def callbacks_show_food(
             f"")
     builder = InlineKeyboardBuilder()
     builder.button(
-        text=f'Изменить название',
+        text='Изменить название',
         callback_data=SettingsCallbackFactory(
             action='edit_food',
             food_column='name',
             food_id=food['id'])
     )
     builder.button(
-        text=f'Изменить описание',
+        text='Изменить описание',
         callback_data=SettingsCallbackFactory(
             action='edit_food',
             food_column='description',
             food_id=food['id'])
     )
     builder.button(
-        text=f'Изменить вес',
+        text='Изменить вес',
         callback_data=SettingsCallbackFactory(
             action='edit_food',
             food_column='weight',
             food_id=food['id'])
     )
     builder.button(
-        text=f'Изменить цену',
+        text='Изменить цену',
         callback_data=SettingsCallbackFactory(
             action='edit_food',
             food_column='price',
             food_id=food['id'])
     )
     builder.button(
-        text=f'Изменить фото',
+        text='Изменить фото',
         callback_data=SettingsCallbackFactory(
             action='edit_food',
             food_column='image',
             food_id=food['id'])
     )
     builder.button(
-        text=f'Назад',
+        text='Назад',
         callback_data=SettingsCallbackFactory(
             action='show_food',
             food_id=food['id'])
@@ -423,10 +418,10 @@ async def callbacks_edit_food_name_confirm(
     else:
         await state.update_data(name=message.text)
         data = await state.get_data()
-    answer = patch_api_answer(f'food/{data["id"]}/',
-                              data={
-                                  data['col']: data['name']
-                              })
+    patch_api_answer(f'food/{data["id"]}/',
+                     data={
+                         data['col']: data['name']
+                     })
     await message.answer(f'{FOOD_COL[data["col"]]} успешно изменено')
 
 
@@ -437,13 +432,13 @@ async def callbacks_delete_food(
 ):
     builder = InlineKeyboardBuilder()
     builder.button(
-        text=f'Удалить',
+        text='Удалить',
         callback_data=SettingsCallbackFactory(
             action='delete_food_confirm',
             food_id=callback_data.food_id)
     )
     builder.button(
-        text=f'Отмена',
+        text='Отмена',
         callback_data=SettingsCallbackFactory(
             action='show_food',
             food_id=callback_data.food_id)

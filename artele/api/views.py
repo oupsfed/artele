@@ -1,21 +1,16 @@
-import requests
-from django.db.models import Sum
-from django.http import HttpResponse
+from core.models import Message
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-import fpdf
-from drf_pdf.renderer import PDFRenderer
-from drf_pdf.response import PDFFileResponse
+from food.models import Cart, Food, Order
 from fpdf import FPDF
-from rest_framework import viewsets, status
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
-
 from users.models import User
-from .serializers import UserSerializer, FoodSerializer, MessageSerializer, CartSerializer, OrderSerializer
-from food.models import Food, Cart, Order
-from core.models import Message
+
+from .serializers import (CartSerializer, FoodSerializer, MessageSerializer,
+                          OrderSerializer, UserSerializer)
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -195,9 +190,9 @@ class OrderListViewSet(viewsets.ModelViewSet):
         pdf.cell(200, 10, txt="Всего", ln=1, align="C")
 
         pdf.set_font('DejaVu', '', 14)
-        pdf.cell(20, 10, f'№ п/п', 1, align="C")
+        pdf.cell(20, 10, '№ п/п', 1, align="C")
         pdf.cell(120, 10, 'Название', 1, align="C")
-        pdf.cell(40, 10, f'Количество', 1, ln=1, align="C")
+        pdf.cell(40, 10, 'Количество', 1, ln=1, align="C")
         i = 0
         for name, amount in food_list.items():
             i += 1
@@ -211,9 +206,9 @@ class OrderListViewSet(viewsets.ModelViewSet):
         for user_name, food_list in user_list.items():
             i = 0
             pdf.cell(200, 10, txt=user_name, ln=1, align="C")
-            pdf.cell(20, 10, f'№ п/п', 1, align="C")
+            pdf.cell(20, 10, '№ п/п', 1, align="C")
             pdf.cell(120, 10, 'Название', 1, align="C")
-            pdf.cell(40, 10, f'Количество', 1, ln=1, align="C")
+            pdf.cell(40, 10, 'Количество', 1, ln=1, align="C")
             for name, amount in food_list.items():
                 i += 1
                 pdf.cell(20, 10, f'{i}.', 1, align="C")
