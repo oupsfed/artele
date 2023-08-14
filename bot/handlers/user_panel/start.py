@@ -2,13 +2,13 @@ import logging
 from http import HTTPStatus
 
 from aiogram import Router, types
-from aiogram.filters import Command, ChatMemberUpdatedFilter, KICKED
+from aiogram.filters import KICKED, ChatMemberUpdatedFilter, Command
 from aiogram.types import ChatMemberUpdated
 from aiogram.utils.keyboard import ReplyKeyboardBuilder
 
-from utils import (check_permissions, delete_api_answer, get_api_answer,
-                   post_api_answer)
 
+from bot.middlewares.role import is_guest, is_admin
+from bot.utils import post_api_answer, get_api_answer, delete_api_answer
 
 router = Router()
 
@@ -31,14 +31,22 @@ async def cmd_start(message: types.Message):
                      f' {user.last_name} chat_id - {user.id}')
     answer = get_api_answer('message/start/')
     answer = answer.json()
+    btn_text = 'Заказ'
+    if is_guest(user.id):
+        btn_text = 'Заявка'
     builder = ReplyKeyboardBuilder()
     builder.row(
         types.KeyboardButton(text="Меню"),
-        types.KeyboardButton(text="Корзина"),
+        types.KeyboardButton(text='Корзина'),
     )
     builder.row(
+        types.KeyboardButton(text=btn_text),
         types.KeyboardButton(text="Информация"),
     )
+    if is_admin(user.id):
+        builder.row(
+            types.KeyboardButton(text="Настройки бота"),
+        )
 
     await message.answer(answer['text'],
                          parse_mode='HTML',
@@ -53,4 +61,3 @@ async def user_blocked_bot(event: ChatMemberUpdated):
                  f'{event.from_user.last_name} chat_id - {event.from_user.id}'
                  f' заблокировал бота')
     delete_api_answer(f'users/{event.from_user.id}')
-
