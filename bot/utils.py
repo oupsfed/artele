@@ -9,6 +9,26 @@ HEADERS = {'Content-type': 'application/json',
            'Content-Encoding': 'utf-8'}
 
 
+class Action:
+    get = 'get'
+    create = 'create'
+    remove = 'remove'
+    get_all = 'get_all'
+    update = 'update'
+
+    def __init__(self,
+                 callback_name):
+        self.callback = callback_name
+        self.get = self.callback + self.get
+        self.create = self.callback + self.create
+        self.remove = self.callback + self.remove
+        self.get_all = self.callback + self.get_all
+        self.update = self.callback + self.update
+
+    def __str__(self):
+        return self.callback
+
+
 def get_api_answer(endpoint: str,
                    params=None) -> Response:
     """

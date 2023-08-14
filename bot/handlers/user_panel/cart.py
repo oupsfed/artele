@@ -9,8 +9,8 @@ from magic_filter import F
 
 from bot.middlewares.role import is_guest
 from bot.service.cart import (CartCallbackFactory, add_to_cart, cart_builder,
-                              remove_from_cart)
-from bot.service.menu import food_info
+                              remove_from_cart, cart_action)
+from bot.service.food import food_info
 from bot.utils import send_message_to_admin, get_api_answer, post_api_answer
 
 router = Router()
@@ -30,7 +30,7 @@ async def menu(message: types.Message):
     )
 
 
-@router.callback_query(CartCallbackFactory.filter(F.action == 'cart'))
+@router.callback_query(CartCallbackFactory.filter(F.action == cart_action.get_all))
 async def callbacks_show_cart(
         callback: types.CallbackQuery,
         callback_data: CartCallbackFactory
@@ -51,7 +51,7 @@ async def callbacks_show_cart(
         )
 
 
-@router.callback_query(CartCallbackFactory.filter(F.action == 'cart_food'))
+@router.callback_query(CartCallbackFactory.filter(F.action == cart_action.get))
 async def callbacks_show_cart(
         callback: types.CallbackQuery,
         callback_data: CartCallbackFactory
@@ -75,7 +75,7 @@ async def callbacks_show_cart(
     await callback.message.delete()
 
 
-@router.callback_query(CartCallbackFactory.filter(F.action == 'add'))
+@router.callback_query(CartCallbackFactory.filter(F.action == cart_action.create))
 async def callbacks_add_to_cart(
         callback: types.CallbackQuery,
         callback_data: CartCallbackFactory
@@ -95,7 +95,7 @@ async def callbacks_add_to_cart(
     )
 
 
-@router.callback_query(CartCallbackFactory.filter(F.action == 'delete'))
+@router.callback_query(CartCallbackFactory.filter(F.action == cart_action.remove))
 async def callbacks_delete_from_cart(
         callback: types.CallbackQuery,
         callback_data: CartCallbackFactory

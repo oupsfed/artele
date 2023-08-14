@@ -4,10 +4,12 @@ import os
 
 from aiogram import Bot, Dispatcher
 from dotenv import load_dotenv
-from handlers.admin_panel import (edit_menu, requests_for_access, settings,
+
+from bot.utils import Action
+from handlers.admin_panel import (edit_food, requests_for_access, settings,
                                   user_list)
 
-from bot.handlers.admin_panel import orders_list
+from bot.handlers.admin_panel import orders_list, add_food
 from bot.handlers.guest_panel import access
 from bot.handlers.user_panel import cart, menu, order, start
 
@@ -26,7 +28,8 @@ async def main():
                        order.router,
                        settings.router,
                        access.router,
-                       edit_menu.router,
+                       edit_food.router,
+                       add_food.router,
                        user_list.router,
                        requests_for_access.router,
                        orders_list.router)

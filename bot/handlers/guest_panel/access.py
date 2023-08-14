@@ -56,6 +56,7 @@ async def callbacks_edit_food_name_confirm(
     else:
         await state.update_data(phone=number)
         data = await state.get_data()
+        await state.clear()
         patch_api_answer(f'users/{message.from_user.id}/',
                          data={
                              'name': data['name'],
