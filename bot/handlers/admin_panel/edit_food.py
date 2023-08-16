@@ -6,9 +6,11 @@ from aiogram.types import Message
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from bot.middlewares.role import IsAdminMessageMiddleware
-from bot.service.food import menu_builder, FoodCallbackFactory, admin_edit_food_builder, FOOD_COL, \
-    download_and_encode_image, food_info, food_builder, food_action
-from bot.utils import patch_api_answer, delete_api_answer
+from bot.service.food import (FOOD_COL, FoodCallbackFactory,
+                              admin_edit_food_builder,
+                              download_and_encode_image, food_action,
+                              food_builder, food_info, menu_builder)
+from bot.utils import delete_api_answer, patch_api_answer
 
 MAIN_MESSAGE = 'Меню'
 

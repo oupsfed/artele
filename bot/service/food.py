@@ -4,12 +4,12 @@ from typing import Optional
 
 from aiogram import Bot
 from aiogram.filters.callback_data import CallbackData
-from aiogram.types import URLInputFile, PhotoSize
+from aiogram.types import PhotoSize, URLInputFile
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from bot.middlewares.role import is_admin
-from bot.service.cart import cart_action, CartCallbackFactory
-from bot.utils import get_api_answer, Action
+from bot.service.cart import cart_action
+from bot.utils import Action, get_api_answer
 
 FOOD_COL = {
     'name': 'название',

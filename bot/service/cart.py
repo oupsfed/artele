@@ -5,7 +5,8 @@ from typing import Optional
 from aiogram.filters.callback_data import CallbackData
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-from bot.utils import get_api_answer, post_api_answer, Action
+from bot.service.order import OrderCallbackFactory, order_action
+from bot.utils import Action, get_api_answer, post_api_answer
 
 cart_action = Action('cart')
 
@@ -38,7 +39,7 @@ async def cart_builder(user_id: int,
             text=f"{food['name']} - {cart['amount']} шт.",
             callback_data=CartCallbackFactory(
                 action=cart_action.get,
-                cart_id=food['id'],
+                food_id=food['id'],
                 page=page)
         )
         rows.append(1)
@@ -72,7 +73,7 @@ async def cart_builder(user_id: int,
         builder.button(
             text="➡️",
             callback_data=CartCallbackFactory(
-                action='cart',
+                action=cart_action.get_all,
                 page=page + 1)
         )
         page_buttons += 1
@@ -80,8 +81,8 @@ async def cart_builder(user_id: int,
         rows.append(page_buttons)
     builder.button(
         text=f"Заказать - {cart_sum} ₽",
-        callback_data=CartCallbackFactory(
-            action='order')
+        callback_data=OrderCallbackFactory(
+            action=order_action.create)
     )
     rows.append(1)
     builder.adjust(*rows)

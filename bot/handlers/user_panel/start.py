@@ -6,9 +6,8 @@ from aiogram.filters import KICKED, ChatMemberUpdatedFilter, Command
 from aiogram.types import ChatMemberUpdated
 from aiogram.utils.keyboard import ReplyKeyboardBuilder
 
-
-from bot.middlewares.role import is_guest, is_admin
-from bot.utils import post_api_answer, get_api_answer, delete_api_answer
+from bot.middlewares.role import is_admin, is_guest
+from bot.utils import delete_api_answer, get_api_answer, post_api_answer
 
 router = Router()
 
@@ -45,7 +44,7 @@ async def cmd_start(message: types.Message):
     )
     if is_admin(user.id):
         builder.row(
-            types.KeyboardButton(text="Настройки бота"),
+            types.KeyboardButton(text='Панель администратора'),
         )
 
     await message.answer(answer['text'],

@@ -1,12 +1,13 @@
-from core.models import Message
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from food.models import Cart, Food, Order
 from fpdf import FPDF
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
+
+from core.models import Message
+from food.models import Cart, Food, Order
 from users.models import User
 
 from .serializers import (CartSerializer, FoodSerializer, MessageSerializer,
@@ -145,16 +146,39 @@ class OrderViewSet(viewsets.ModelViewSet):
 
     @action(
         methods=['POST'],
-        detail=True,
+        detail=False,
         url_path='cancel',
     )
-    def cancel_order(self, request, pk):
-        user = User.objects.get(telegram_chat_id=pk)
-        order_list = Order.objects.filter(user=user)
-        for order_pos in order_list:
-            order_pos.status = 'C'
-            order_pos.save()
-        return Response('Успешно удалено', status=status.HTTP_200_OK)
+    def order_cancel(self, request, *args, **kwargs):
+        if 'user_id' in request.data:
+            user_id = request.data['user_id']
+            Order.objects.filter(status='IP',
+                                 user__telegram_chat_id=user_id
+                                 ).update(
+                status='C'
+            )
+        if 'user_name' in request.data:
+            user_name = request.data['user_name']
+            Order.objects.filter(status='IP',
+                                 user__name=user_name
+                                 ).update(
+                status='C'
+            )
+        return Response('Успешно удалено', status=status.HTTP_204_NO_CONTENT)
+
+    @action(
+        methods=['POST'],
+        detail=False,
+        url_path='done',
+    )
+    def order_done(self, request, *args, **kwargs):
+        user_name = request.data['user_name']
+        Order.objects.filter(status='IP',
+                             user__name=user_name
+                             ).update(
+            status='D'
+        )
+        return Response('Успешно выполнено', status=status.HTTP_200_OK)
 
 
 class OrderListViewSet(viewsets.ModelViewSet):
@@ -203,13 +227,13 @@ class OrderListViewSet(viewsets.ModelViewSet):
         pdf.set_font('DejaVu', '', 18)
         pdf.cell(200, 20, txt="По каждому покупателю", ln=1, align="C")
         pdf.set_font('DejaVu', '', 14)
-        for user_name, food_list in user_list.items():
+        for user_name, food_data in user_list.items():
             i = 0
             pdf.cell(200, 10, txt=user_name, ln=1, align="C")
             pdf.cell(20, 10, '№ п/п', 1, align="C")
             pdf.cell(120, 10, 'Название', 1, align="C")
             pdf.cell(40, 10, 'Количество', 1, ln=1, align="C")
-            for name, amount in food_list.items():
+            for name, amount in food_data.items():
                 i += 1
                 pdf.cell(20, 10, f'{i}.', 1, align="C")
                 pdf.cell(120, 10, name, 1, align="C")

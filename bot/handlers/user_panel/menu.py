@@ -5,9 +5,9 @@ from aiogram.exceptions import TelegramBadRequest
 from aiogram.filters import Text
 from magic_filter import F
 
-from bot.service.cart import add_to_cart, remove_from_cart, cart_action, CartCallbackFactory
-from bot.service.food import (FoodCallbackFactory, food_builder, food_info,
-                              menu_builder, food_action)
+from bot.service.cart import add_to_cart, cart_action, remove_from_cart
+from bot.service.food import (FoodCallbackFactory, food_action, food_builder,
+                              food_info, menu_builder)
 
 router = Router()
 
