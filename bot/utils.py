@@ -1,12 +1,20 @@
 import json
-import logging
+import os
 
 import requests
+from aiogram import Bot
+from dotenv import load_dotenv
 from requests import Response
 
-URL = 'http://127.0.0.1:8000/api/'
+from bot.logger import logger
+
+load_dotenv()
+
+URL = os.getenv('URL')
 HEADERS = {'Content-type': 'application/json',
            'Content-Encoding': 'utf-8'}
+token = os.getenv('TOKEN')
+bot = Bot(token=token, parse_mode='HTML')
 
 
 class Action:
@@ -48,7 +56,7 @@ def get_api_answer(endpoint: str,
         params=params
     )
     if answer.status_code != 200:
-        logging.error(f'Запрос к {endpoint} отклонен')
+        logger.error(f'Запрос к {endpoint} отклонен')
     return answer
 
 
@@ -112,31 +120,3 @@ def delete_api_answer(endpoint: str) -> Response:
         headers=HEADERS,
     )
     return answer
-
-
-def check_permissions(user_id: int) -> bool:
-    answer = get_api_answer(f'users/{user_id}')
-    return answer.json()['is_staff']
-
-
-def check_phone_number(number: str) -> str:
-    replace_data = [
-        '+', ' ', '(', ')', '-'
-    ]
-    for replace_symbol in replace_data:
-        number = number.replace(replace_symbol, '')
-    if number[0] == '7':
-        number = f'8{number[1:]}'
-    return number
-
-
-async def send_message_to_admin(bot, text):
-    admin_data = get_api_answer('admin/').json()
-    for admin in admin_data:
-        try:
-            await bot.send_message(
-                chat_id=admin['telegram_chat_id'],
-                text=text
-            )
-        except Exception as error:
-            logging.error(f'Произошла ошибка при отправке сообщения пользователю \n {error}')

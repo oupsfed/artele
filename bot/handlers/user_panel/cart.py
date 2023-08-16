@@ -1,17 +1,13 @@
-import logging
-from http import HTTPStatus
-
-from aiogram import Bot, Router, types
+from aiogram import Router, types
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.filters import Text
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from magic_filter import F
 
-from bot.middlewares.role import is_guest
-from bot.service.cart import (CartCallbackFactory, add_to_cart, cart_builder,
-                              remove_from_cart, cart_action)
+from bot.logger import logger
+from bot.service.cart import (CartCallbackFactory, add_to_cart, cart_action,
+                              cart_builder, remove_from_cart)
 from bot.service.food import food_info
-from bot.utils import send_message_to_admin, get_api_answer, post_api_answer
 
 router = Router()
 
@@ -56,14 +52,12 @@ async def callbacks_show_cart(
         callback: types.CallbackQuery,
         callback_data: CartCallbackFactory
 ):
-    answer = get_api_answer(f'food/{callback_data.cart_id}')
-    food = answer.json()
-    food_data = await food_info(food['id'])
+    food_data = await food_info(callback_data.food_id)
     builder = InlineKeyboardBuilder()
     builder.button(
         text='Назад',
         callback_data=CartCallbackFactory(
-            action='cart',
+            action=cart_action.get_all,
             page=callback_data.page
         ))
     builder.adjust(1)
@@ -115,30 +109,5 @@ async def callbacks_delete_from_cart(
             reply_markup=builder.as_markup()
         )
     except TelegramBadRequest:
-        logging.info('Пользователь пытается сделать '
-                     'количетсво продуктов отрицательным')
-
-
-@router.callback_query(CartCallbackFactory.filter(F.action == 'order'))
-async def callbacks_show_cart(
-        callback: types.CallbackQuery,
-        callback_data: CartCallbackFactory,
-        bot: Bot
-):
-    if is_guest(callback.from_user.id):
-        answer = (
-            'Недостаточно прав для оформления заказа \n'
-            'Подайте заявку на доступ к заказам'
-        )
-    else:
-        answer = post_api_answer(f'cart/{callback.from_user.id}/order/',
-                                 data={})
-        if answer.status_code == HTTPStatus.CREATED:
-            await send_message_to_admin(
-                bot,
-                'Добавлен новый заказ'
-            )
-    await callback.message.delete()
-    await callback.message.answer(
-        answer.json()
-    )
+        logger.info('Пользователь пытается сделать '
+                    'количетсво продуктов отрицательным')

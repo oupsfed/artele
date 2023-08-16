@@ -2,7 +2,8 @@ from typing import Any, Awaitable, Callable, Dict
 
 from aiogram import BaseMiddleware
 from aiogram.types import CallbackQuery, Message
-from utils import get_api_answer
+
+from bot.utils import get_api_answer
 
 
 def is_admin(user_id) -> bool:

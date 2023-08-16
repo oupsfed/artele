@@ -5,11 +5,11 @@ from aiogram import Bot, F, Router, types
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import Message
-from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from bot.middlewares.role import IsAdminMessageMiddleware
-from bot.service.food import FOOD_COL, FoodCallbackFactory, add_food_builder, food_info, food_builder, food_action
-from bot.utils import post_api_answer, delete_api_answer
+from bot.service.food import (FoodCallbackFactory, add_food_builder,
+                              food_action, food_builder, food_info)
+from bot.utils import post_api_answer
 
 MAIN_MESSAGE = 'Меню'
 

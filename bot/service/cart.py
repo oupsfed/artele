@@ -1,11 +1,12 @@
-import logging
 from http import HTTPStatus
 from typing import Optional
 
 from aiogram.filters.callback_data import CallbackData
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-from bot.utils import get_api_answer, post_api_answer, Action
+from bot.logger import logger
+from bot.service.order import OrderCallbackFactory, order_action
+from bot.utils import Action, get_api_answer, post_api_answer
 
 cart_action = Action('cart')
 
@@ -38,7 +39,7 @@ async def cart_builder(user_id: int,
             text=f"{food['name']} - {cart['amount']} шт.",
             callback_data=CartCallbackFactory(
                 action=cart_action.get,
-                cart_id=food['id'],
+                food_id=food['id'],
                 page=page)
         )
         rows.append(1)
@@ -72,7 +73,7 @@ async def cart_builder(user_id: int,
         builder.button(
             text="➡️",
             callback_data=CartCallbackFactory(
-                action='cart',
+                action=cart_action.get_all,
                 page=page + 1)
         )
         page_buttons += 1
@@ -80,8 +81,8 @@ async def cart_builder(user_id: int,
         rows.append(page_buttons)
     builder.button(
         text=f"Заказать - {cart_sum} ₽",
-        callback_data=CartCallbackFactory(
-            action='order')
+        callback_data=OrderCallbackFactory(
+            action=order_action.create)
     )
     rows.append(1)
     builder.adjust(*rows)
@@ -97,10 +98,10 @@ async def add_to_cart(user_id: int,
     answer = post_api_answer('cart/',
                              data=data)
     if answer.status_code == HTTPStatus.CREATED:
-        logging.info('chat_id - {user.id}: добавил товар в корзину')
+        logger.info('chat_id - {user.id}: добавил товар в корзину')
     else:
-        logging.error(f'Произошла ошибка при добавлении товара в корзину:'
-                      f'{data} \n {answer.json()}')
+        logger.error(f'Произошла ошибка при добавлении товара в корзину:'
+                     f'{data} \n {answer.json()}')
 
 
 async def remove_from_cart(user_id: int,
@@ -113,12 +114,12 @@ async def remove_from_cart(user_id: int,
                             params=data)
     answer = answer.json()
     if answer['count'] != 1:
-        logging.info(f'Ошибка при запросе к корзине {user_id}')
+        logger.info(f'Ошибка при запросе к корзине {user_id}')
         return
     cart_id = answer['results'][0]['id']
     answer = post_api_answer(f'cart/{cart_id}/delete/', data={})
     if answer.status_code == HTTPStatus.OK:
-        logging.info(f'chat_id - {user_id}: удалил товар из корзины')
+        logger.info(f'chat_id - {user_id}: удалил товар из корзины')
     else:
-        logging.error(f'Произошла ошибка при удалении товара из корзин:'
-                      f'{data} \n {answer.json()}')
+        logger.error(f'Произошла ошибка при удалении товара из корзин:'
+                     f'{data} \n {answer.json()}')
