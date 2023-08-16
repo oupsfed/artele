@@ -1,22 +1,19 @@
 from http import HTTPStatus
 from typing import Optional
 
-from aiogram.filters.callback_data import CallbackData
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from bot.logger import logger
 from bot.service.message import send_message_to_user
-from bot.utils import Action, get_api_answer, patch_api_answer
+from bot.utils import Action, get_api_answer, patch_api_answer, ArteleCallbackData
 
 user_list_actions = Action('user_list')
 user_list_actions.send_direct = 'send_direct'
 user_list_actions.send_to_all = 'send_to_all'
 
 
-class UserListCallbackFactory(CallbackData, prefix='user_list'):
-    action: str
+class UserListCallbackFactory(ArteleCallbackData, prefix='user_list'):
     user_id: Optional[int]
-    page: Optional[int]
 
 
 async def user_list_builder(page: int = 1):

@@ -1,20 +1,17 @@
 from http import HTTPStatus
 from typing import Optional
 
-from aiogram.filters.callback_data import CallbackData
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from bot.logger import logger
 from bot.service.message import send_message_to_user
-from bot.utils import Action, get_api_answer, patch_api_answer
+from bot.utils import Action, get_api_answer, patch_api_answer, ArteleCallbackData
 
 access_action = Action('access')
 
 
-class AccessCallbackFactory(CallbackData, prefix='access'):
-    action: str
+class AccessCallbackFactory(ArteleCallbackData, prefix='access'):
     user_id: Optional[int]
-    page: Optional[int]
 
 
 async def access_list_builder(page: int = 1):

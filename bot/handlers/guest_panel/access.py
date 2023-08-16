@@ -49,25 +49,25 @@ async def callbacks_edit_food_name_confirm(
         state: FSMContext,
         bot: Bot):
     number = check_phone_number(message.text)
-    if not number.isdigit():
+    if not number:
         await message.answer(
             "Введите номер телефона в правильном формате \n"
             "Пример: +79781234567"
         )
         await state.set_state(Access.phone)
-    else:
-        await state.update_data(phone=number)
-        data = await state.get_data()
-        await state.clear()
-        patch_api_answer(f'users/{message.from_user.id}/',
-                         data={
-                             'name': data['name'],
-                             'phone_number': data['phone'],
-                             'request_for_access': True
-                         })
-        await message.answer(
-            'Ваша заявка отправлена!'
-        )
-        await send_message_to_admin(
-            bot,
-            f'Появилась новая заявка от пользователя {data["name"]}')
+        return
+    await state.update_data(phone=number)
+    data = await state.get_data()
+    await state.clear()
+    patch_api_answer(f'users/{message.from_user.id}/',
+                     data={
+                         'name': data['name'],
+                         'phone_number': data['phone'],
+                         'request_for_access': True
+                     })
+    await message.answer(
+        'Ваша заявка отправлена!'
+    )
+    await send_message_to_admin(
+        bot,
+        f'Появилась новая заявка от пользователя {data["name"]}')

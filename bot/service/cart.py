@@ -1,22 +1,19 @@
 from http import HTTPStatus
 from typing import Optional
 
-from aiogram.filters.callback_data import CallbackData
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from bot.logger import logger
 from bot.service.order import OrderCallbackFactory, order_action
-from bot.utils import Action, get_api_answer, post_api_answer
+from bot.utils import Action, get_api_answer, post_api_answer, ArteleCallbackData
 
 cart_action = Action('cart')
 
 
-class CartCallbackFactory(CallbackData, prefix='cart'):
-    action: str
+class CartCallbackFactory(ArteleCallbackData, prefix='cart'):
     cart_id: Optional[int]
     food_id: Optional[int]
     user_id: Optional[int]
-    page: Optional[int]
 
 
 async def cart_builder(user_id: int,

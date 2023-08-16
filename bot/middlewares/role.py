@@ -7,11 +7,29 @@ from bot.utils import get_api_answer
 
 
 def is_admin(user_id) -> bool:
+    """
+    Валидатор проверки прав администратора
+
+            Parameters:
+                    user_id (int) : telegram-chat-id пользователя
+
+            Returns:
+                    answer (bool): Возвращает True, False
+    """
     answer = get_api_answer(f'users/{user_id}')
     return answer.json()['role'] == 'ADMIN'
 
 
 def is_guest(user_id) -> bool:
+    """
+    Валидатор проверки прав гостя
+
+            Parameters:
+                    user_id (int) : telegram-chat-id пользователя
+
+            Returns:
+                    answer (bool): Возвращает True, False
+    """
     answer = get_api_answer(f'users/{user_id}')
     return answer.json()['role'] == 'GUEST'
 

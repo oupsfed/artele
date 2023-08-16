@@ -3,13 +3,12 @@ import os
 from typing import Optional
 
 from aiogram import Bot
-from aiogram.filters.callback_data import CallbackData
 from aiogram.types import PhotoSize, URLInputFile
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from bot.middlewares.role import is_admin
 from bot.service.cart import cart_action
-from bot.utils import Action, get_api_answer
+from bot.utils import Action, get_api_answer, ArteleCallbackData
 
 FOOD_COL = {
     'name': 'название',
@@ -26,11 +25,9 @@ food_action.update_column = 'update_column'
 food_action.remove_preview = 'remove_preview'
 
 
-class FoodCallbackFactory(CallbackData, prefix='food'):
-    action: str
+class FoodCallbackFactory(ArteleCallbackData, prefix='food'):
     food_id: Optional[int]
     food_column: Optional[str]
-    page: Optional[int] = 1
     for_staff: Optional[bool] = False
 
 

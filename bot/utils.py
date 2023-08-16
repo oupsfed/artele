@@ -1,8 +1,10 @@
 import json
 import os
+from typing import Optional
 
 import requests
 from aiogram import Bot
+from aiogram.filters.callback_data import CallbackData
 from dotenv import load_dotenv
 from requests import Response
 
@@ -37,6 +39,11 @@ class Action:
         return self.callback
 
 
+class ArteleCallbackData(CallbackData, prefix='artele'):
+    action: str
+    page: Optional[int]
+
+
 def get_api_answer(endpoint: str,
                    params=None) -> Response:
     """
@@ -47,7 +54,7 @@ def get_api_answer(endpoint: str,
                     params (dict) : параметры запроса
 
             Returns:
-                    answer (dict): Информация с API-сервиса
+                    answer (Response): Информация с API-сервиса
     """
     endpoint = f'{URL}{endpoint}'
     answer = requests.get(
@@ -70,7 +77,7 @@ def post_api_answer(endpoint: str,
                     data (dict): данные для отправки на API
 
             Returns:
-                    homework (dict): Информация с API-сервиса в формате JSON
+                    answer (Response): Информация с API-сервиса
     """
     endpoint = f'{URL}{endpoint}'
     data = json.dumps(data)
@@ -85,14 +92,14 @@ def post_api_answer(endpoint: str,
 def patch_api_answer(endpoint: str,
                      data: dict) -> Response:
     """
-    Делает POST запрос к эндпоинту API-сервиса.
+    Делает PATCH запрос к эндпоинту API-сервиса.
 
             Parameters:
                     endpoint (str) : точка доступа
                     data (dict): данные для отправки на API
 
             Returns:
-                    homework (dict): Информация с API-сервиса в формате JSON
+                    answer (Response): Информация с API-сервиса
     """
     endpoint = f'{URL}{endpoint}'
     data = json.dumps(data)
@@ -106,13 +113,13 @@ def patch_api_answer(endpoint: str,
 
 def delete_api_answer(endpoint: str) -> Response:
     """
-    Делает GET запрос к эндпоинту API-сервиса.
+    Делает DELETE запрос к эндпоинту API-сервиса.
 
             Parameters:
                     endpoint (str) : точка доступа
 
             Returns:
-                    answer (dict): Информация с API-сервиса
+                   answer (Response): Информация с API-сервиса
     """
     endpoint = f'{URL}{endpoint}'
     answer = requests.delete(

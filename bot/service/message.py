@@ -7,6 +7,15 @@ from bot.validators import check_user_exist
 
 async def send_message_to_user(user_id: int,
                                text: str):
+    """
+    Отправка сообщения пользователю
+
+            Parameters:
+                    user_id (int) : telegram-chat-id пользователя
+                    text (str) : Текст сообщения
+            Returns:
+                    text (str): Возвращает строку об успехе или ошибке
+    """
     user = await check_user_exist(user_id)
     if not user:
         return 'Пользователь не найден'
@@ -25,6 +34,14 @@ async def send_message_to_user(user_id: int,
 
 
 async def send_message_to_admin(text):
+    """
+    Отправка сообщения администраторам
+
+            Parameters:
+                    text (str) : Текст сообщения
+            Returns:
+                    text (str): Возвращает строку об успехе или ошибке
+    """
     admin_data = get_api_answer('admin/').json()
     for admin in admin_data:
         await send_message_to_user(
