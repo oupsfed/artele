@@ -1,6 +1,3 @@
-import base64
-import os
-
 from aiogram import Bot, F, Router, types
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
@@ -8,7 +5,8 @@ from aiogram.types import Message
 
 from bot.middlewares.role import IsAdminMessageMiddleware
 from bot.service.food import (FoodCallbackFactory, add_food_builder,
-                              food_action, food_builder, food_info)
+                              download_and_encode_image, food_action,
+                              food_builder, food_info)
 from bot.utils import post_api_answer
 
 MAIN_MESSAGE = 'Меню'
@@ -40,7 +38,7 @@ async def callbacks_add_food_name(
 
 
 @router.message(AddFood.name)
-async def callbacks_edit_food_name_confirm(
+async def callbacks_add_food_description(
         message: Message,
         state: FSMContext
 ):
@@ -54,7 +52,7 @@ async def callbacks_edit_food_name_confirm(
 
 
 @router.message(AddFood.description)
-async def callbacks_edit_food_name_confirm(
+async def callbacks_add_food_weight(
         message: Message,
         state: FSMContext
 ):
@@ -68,7 +66,7 @@ async def callbacks_edit_food_name_confirm(
 
 
 @router.message(AddFood.weight)
-async def callbacks_edit_food_name_confirm(
+async def callbacks_add_food_price(
         message: Message,
         state: FSMContext,
 ):
@@ -82,7 +80,7 @@ async def callbacks_edit_food_name_confirm(
 
 
 @router.message(AddFood.price)
-async def callbacks_edit_food_name_confirm(
+async def callbacks_add_food_image(
         message: Message,
         state: FSMContext,
         bot: Bot):
@@ -96,19 +94,11 @@ async def callbacks_edit_food_name_confirm(
 
 
 @router.message(AddFood.image)
-async def callbacks_edit_food_name_confirm(
+async def callbacks_add_food_confirm(
         message: Message,
         state: FSMContext,
         bot: Bot):
-    direction = f"tmp/{message.photo[-1].file_id}.jpg"
-    await bot.download(
-        message.photo[-2],
-        destination=direction
-    )
-    with open(direction, "rb") as image_file:
-        encoded_string = base64.b64encode(image_file.read())
-    image_string = encoded_string.decode('utf-8')
-    os.remove(direction)
+    image_string = await download_and_encode_image(message.photo[-2])
     await state.update_data(image=image_string)
     data = await state.get_data()
     answer = post_api_answer('food/',

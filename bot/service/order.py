@@ -4,7 +4,8 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from bot.middlewares.role import is_guest
 from bot.service.message import send_message_to_admin
-from bot.utils import Action, get_api_answer, post_api_answer, ArteleCallbackData
+from bot.utils import (Action, ArteleCallbackData, get_api_answer,
+                       post_api_answer)
 
 order_action = Action('order')
 

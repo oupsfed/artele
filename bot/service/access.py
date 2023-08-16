@@ -5,7 +5,8 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from bot.logger import logger
 from bot.service.message import send_message_to_user
-from bot.utils import Action, get_api_answer, patch_api_answer, ArteleCallbackData
+from bot.utils import (Action, ArteleCallbackData, get_api_answer,
+                       patch_api_answer)
 
 access_action = Action('access')
 

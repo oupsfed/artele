@@ -4,7 +4,8 @@ from typing import Optional
 from aiogram.types import URLInputFile
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-from bot.utils import Action, get_api_answer, post_api_answer, ArteleCallbackData
+from bot.utils import (Action, ArteleCallbackData, get_api_answer,
+                       post_api_answer)
 
 orders_list_actions = Action('ord_list')
 orders_list_actions.filter_by_user = 'by_user'

@@ -45,7 +45,7 @@ async def callbacks_show_request(
 
 
 @router.callback_query(UserListCallbackFactory.filter(F.action == user_list_actions.remove))
-async def callbacks_accepct_request(
+async def callbacks_accept_request(
         callback: types.CallbackQuery,
         callback_data: UserListCallbackFactory,
         bot: Bot
@@ -65,7 +65,7 @@ async def callbacks_accepct_request(
 
 
 @router.callback_query(UserListCallbackFactory.filter(F.action == user_list_actions.get_all))
-async def callbacks_accepct_request(
+async def callbacks_accept_request(
         callback: types.CallbackQuery,
         callback_data: UserListCallbackFactory,
         bot: Bot

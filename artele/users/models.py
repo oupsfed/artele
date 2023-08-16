@@ -21,6 +21,7 @@ class User(AbstractUser):
                             },
                             default='GUEST')
     USERNAME_FIELD = 'telegram_chat_id'
+    REQUIRED_FIELDS = ['username']
 
     def __str__(self):
         return f'{self.telegram_chat_id}'
