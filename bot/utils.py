@@ -1,11 +1,12 @@
 import json
-import logging
 import os
 
 import requests
 from aiogram import Bot
 from dotenv import load_dotenv
 from requests import Response
+
+from bot.logger import logger
 
 load_dotenv()
 
@@ -55,7 +56,7 @@ def get_api_answer(endpoint: str,
         params=params
     )
     if answer.status_code != 200:
-        logging.error(f'Запрос к {endpoint} отклонен')
+        logger.error(f'Запрос к {endpoint} отклонен')
     return answer
 
 

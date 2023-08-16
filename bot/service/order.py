@@ -51,7 +51,6 @@ async def order_create(user_id: int,
                                  data={})
         if answer.status_code == HTTPStatus.CREATED:
             await send_message_to_admin(
-                bot,
                 'Добавлен новый заказ'
             )
     return answer

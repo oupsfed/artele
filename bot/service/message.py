@@ -1,7 +1,6 @@
-import logging
-
 from aiogram.exceptions import TelegramBadRequest
 
+from bot.logger import logger
 from bot.utils import bot, get_api_answer
 from bot.validators import check_user_exist
 
@@ -18,10 +17,10 @@ async def send_message_to_user(user_id: int,
             text=text
         )
         text = f'Сообщение успешно отправлено пользователю {user_name}'
-        logging.debug(text)
+        logger.debug(text)
     except TelegramBadRequest:
         text = f'Сообщение не отправлено! пользователь {user_name} не найден'
-        logging.error(text)
+        logger.error(text)
     return text
 
 

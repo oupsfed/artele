@@ -55,12 +55,13 @@ async def callbacks_accepct_request(
     builder.button(
         text='Назад',
         callback_data=UserListCallbackFactory(
-            action='show_page',
+            action=user_list_actions.get_all,
             page=callback_data.page)
     )
     builder.adjust(1)
-    await callback.message.edit_reply_markup(text,
-                                             reply_markup=builder.as_markup())
+    await callback.message.answer(text,
+                                  reply_markup=builder.as_markup())
+    await callback.message.delete()
 
 
 @router.callback_query(UserListCallbackFactory.filter(F.action == user_list_actions.get_all))

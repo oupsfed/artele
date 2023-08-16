@@ -1,4 +1,3 @@
-import logging
 from http import HTTPStatus
 
 from aiogram import Router, types
@@ -6,6 +5,7 @@ from aiogram.filters import KICKED, ChatMemberUpdatedFilter, Command
 from aiogram.types import ChatMemberUpdated
 from aiogram.utils.keyboard import ReplyKeyboardBuilder
 
+from bot.logger import logger
 from bot.middlewares.role import is_admin, is_guest
 from bot.utils import delete_api_answer, get_api_answer, post_api_answer
 
@@ -23,11 +23,11 @@ async def cmd_start(message: types.Message):
                                    'username': user.username
                                })
     if register.status_code == HTTPStatus.BAD_REQUEST:
-        logging.info(f'Пользователь {user.first_name} {user.last_name}'
-                     f' chat_id - {user.id} нажал повторно /start')
+        logger.info(f'Пользователь {user.first_name} {user.last_name}'
+                    f' chat_id - {user.id} нажал повторно /start')
     elif register.status_code == HTTPStatus.CREATED:
-        logging.info(f'Новый пользователь запустил бота: {user.first_name}'
-                     f' {user.last_name} chat_id - {user.id}')
+        logger.info(f'Новый пользователь запустил бота: {user.first_name}'
+                    f' {user.last_name} chat_id - {user.id}')
     answer = get_api_answer('message/start/')
     answer = answer.json()
     btn_text = 'Заказ'
@@ -56,7 +56,7 @@ async def cmd_start(message: types.Message):
     ChatMemberUpdatedFilter(member_status_changed=KICKED)
 )
 async def user_blocked_bot(event: ChatMemberUpdated):
-    logging.info(f'Пользователь {event.from_user.first_name} '
-                 f'{event.from_user.last_name} chat_id - {event.from_user.id}'
-                 f' заблокировал бота')
+    logger.info(f'Пользователь {event.from_user.first_name} '
+                f'{event.from_user.last_name} chat_id - {event.from_user.id}'
+                f' заблокировал бота')
     delete_api_answer(f'users/{event.from_user.id}')

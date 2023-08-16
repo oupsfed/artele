@@ -1,10 +1,10 @@
-import logging
 from http import HTTPStatus
 from typing import Optional
 
 from aiogram.filters.callback_data import CallbackData
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
+from bot.logger import logger
 from bot.service.message import send_message_to_user
 from bot.utils import Action, get_api_answer, patch_api_answer
 
@@ -110,10 +110,10 @@ async def user_block(user_id: int):
                               })
     if answer.status_code == HTTPStatus.OK:
         text = 'Пользователь успешно заблокирован!'
-        logging.info(text)
+        logger.info(text)
         await send_message_to_user(user_id,
                                    'Вы были заблокированы!')
     else:
         text = f'Произошла ошибка при блокировке {answer.json()}'
-        logging.error(text)
+        logger.error(text)
     return text

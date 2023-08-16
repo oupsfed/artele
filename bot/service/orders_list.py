@@ -1,3 +1,4 @@
+from http import HTTPStatus
 from typing import Optional
 
 from aiogram.filters.callback_data import CallbackData
@@ -144,7 +145,9 @@ async def order_cancel(user_name: str):
                              data={
                                  'user_name': user_name
                              })
-    return answer.json()
+    if answer.status_code == HTTPStatus.NO_CONTENT:
+        return 'Заказ успешно удален'
+    return 'Произошла ошибка при удалении товара'
 
 
 async def download_pdf():
