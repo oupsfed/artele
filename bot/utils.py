@@ -1,5 +1,6 @@
 import json
 import os
+from http import HTTPStatus
 from typing import Optional
 
 import requests
@@ -62,7 +63,7 @@ def get_api_answer(endpoint: str,
         headers=HEADERS,
         params=params
     )
-    if answer.status_code != 200:
+    if answer.status_code != HTTPStatus.OK:
         logger.error(f'Запрос к {endpoint} отклонен')
     return answer
 
