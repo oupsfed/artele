@@ -57,7 +57,7 @@ def get_api_answer(endpoint: str,
             Returns:
                     answer (Response): Информация с API-сервиса
     """
-    endpoint = f'{URL}{endpoint}'
+    endpoint = f'{URL}api/{endpoint}'
     answer = requests.get(
         url=endpoint,
         headers=HEADERS,
@@ -80,7 +80,7 @@ def post_api_answer(endpoint: str,
             Returns:
                     answer (Response): Информация с API-сервиса
     """
-    endpoint = f'{URL}{endpoint}'
+    endpoint = f'{URL}api/{endpoint}'
     data = json.dumps(data)
     answer = requests.post(
         url=endpoint,
@@ -102,7 +102,7 @@ def patch_api_answer(endpoint: str,
             Returns:
                     answer (Response): Информация с API-сервиса
     """
-    endpoint = f'{URL}{endpoint}'
+    endpoint = f'{URL}api/{endpoint}'
     data = json.dumps(data)
     answer = requests.patch(
         url=endpoint,
@@ -122,7 +122,7 @@ def delete_api_answer(endpoint: str) -> Response:
             Returns:
                    answer (Response): Информация с API-сервиса
     """
-    endpoint = f'{URL}{endpoint}'
+    endpoint = f'{URL}api/{endpoint}'
     answer = requests.delete(
         url=endpoint,
         headers=HEADERS,
