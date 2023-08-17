@@ -78,9 +78,8 @@ class CartViewSet(viewsets.ModelViewSet):
         cart = Cart.objects.get(pk=pk)
         cart.amount += 1
         cart.save()
-        serializer = self.serializer_class(data=cart)
-        serializer.is_valid()
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        serializer = self.get_serializer(cart)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @action(
         methods=['POST'],
@@ -93,8 +92,8 @@ class CartViewSet(viewsets.ModelViewSet):
         cart.save()
         if cart.amount == 0:
             cart.delete()
-
-        return Response('Успешно удалено', status=status.HTTP_200_OK)
+        serializer = self.get_serializer(cart)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     @action(
         methods=['POST'],
