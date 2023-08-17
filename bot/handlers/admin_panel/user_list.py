@@ -5,12 +5,12 @@ from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import Message
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-from bot.middlewares.role import IsAdminMessageMiddleware
-from bot.service.message import send_message_to_user
-from bot.service.user_list import (UserListCallbackFactory, user_block,
-                                   user_list_actions, user_list_builder,
-                                   user_list_get_builder, user_list_get_info)
-from bot.utils import get_api_answer
+from middlewares.role import IsAdminMessageMiddleware
+from service.message import send_message_to_user
+from service.user_list import (UserListCallbackFactory, user_block,
+                               user_list_actions, user_list_builder,
+                               user_list_get_builder, user_list_get_info)
+from utils import get_api_answer
 
 router = Router()
 router.message.middleware(IsAdminMessageMiddleware())

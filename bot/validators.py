@@ -1,7 +1,7 @@
 from http import HTTPStatus
 from typing import Union
 
-from bot.utils import get_api_answer
+from utils import get_api_answer
 
 
 async def check_user_exist(user_id: int) -> Union[bool, dict]:

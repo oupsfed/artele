@@ -1,8 +1,8 @@
 from aiogram.exceptions import TelegramBadRequest
 
-from bot.logger import logger
-from bot.utils import bot, get_api_answer
-from bot.validators import check_user_exist
+from logger import logger
+from utils import bot, get_api_answer
+from validators import check_user_exist
 
 
 async def send_message_to_user(user_id: int,

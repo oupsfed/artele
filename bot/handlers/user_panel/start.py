@@ -3,10 +3,10 @@ from aiogram.filters import KICKED, ChatMemberUpdatedFilter, Command
 from aiogram.types import ChatMemberUpdated
 from aiogram.utils.keyboard import ReplyKeyboardBuilder
 
-from bot.logger import logger
-from bot.middlewares.role import is_admin, is_guest
-from bot.service.user import user_create
-from bot.utils import delete_api_answer
+from logger import logger
+from middlewares.role import is_admin, is_guest
+from service.user import user_create
+from utils import delete_api_answer
 
 router = Router()
 

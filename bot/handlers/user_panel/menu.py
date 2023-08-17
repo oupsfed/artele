@@ -3,10 +3,10 @@ from aiogram.exceptions import TelegramBadRequest
 from aiogram.filters import Text
 from magic_filter import F
 
-from bot.logger import logger
-from bot.service.cart import add_to_cart, cart_action, remove_from_cart
-from bot.service.food import (FoodCallbackFactory, food_action, food_builder,
-                              food_info, menu_builder)
+from logger import logger
+from service.cart import add_to_cart, cart_action, remove_from_cart
+from service.food import (FoodCallbackFactory, food_action, food_builder,
+                          food_info, menu_builder)
 
 router = Router()
 

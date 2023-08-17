@@ -9,7 +9,7 @@ from aiogram.filters.callback_data import CallbackData
 from dotenv import load_dotenv
 from requests import Response
 
-from bot.logger import logger
+from logger import logger
 
 load_dotenv()
 

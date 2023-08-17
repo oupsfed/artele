@@ -1,8 +1,8 @@
 from http import HTTPStatus
 
-from bot.logger import logger
-from bot.utils import post_api_answer
-from bot.validators import check_user_exist
+from logger import logger
+from utils import post_api_answer
+from validators import check_user_exist
 
 
 async def user_create(telegram_chat_id: int,

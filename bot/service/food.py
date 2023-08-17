@@ -5,9 +5,9 @@ from typing import Optional
 from aiogram.types import PhotoSize, URLInputFile
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-from bot.middlewares.role import is_admin
-from bot.service.cart import cart_action
-from bot.utils import Action, ArteleCallbackData, bot, get_api_answer
+from middlewares.role import is_admin
+from service.cart import cart_action
+from utils import Action, ArteleCallbackData, bot, get_api_answer
 
 FOOD_COL = {
     'name': 'название',
