@@ -5,7 +5,7 @@ from users.models import User
 
 
 class Food(models.Model):
-    name = models.CharField(max_length=150)
+    name = models.CharField(max_length=56)
     image = models.ImageField(blank=True, null=True)
     description = models.TextField(blank=True, null=True)
     weight = models.PositiveIntegerField(validators=[MinValueValidator(1)])

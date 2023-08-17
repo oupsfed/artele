@@ -5,6 +5,7 @@ from rest_framework import serializers
 
 from core.models import Message
 from food.models import Cart, Food, Order
+from rest_framework.exceptions import ValidationError
 from users.models import User
 
 
@@ -27,6 +28,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (
+            'id',
             'name',
             'phone_number',
             'request_for_access',
@@ -67,6 +69,12 @@ class CartSerializer(serializers.ModelSerializer):
             'amount'
         )
         read_only_fields = ('amount',)
+
+    def validate_user(self, value):
+        if type(value) != int:
+            raise ValidationError(
+                'id пользователя не может быть строкой')
+        return value
 
 
 class OrderSerializer(serializers.ModelSerializer):

@@ -118,8 +118,16 @@ class CartViewSet(viewsets.ModelViewSet):
         return Response('Заказ успешно создан', status=status.HTTP_201_CREATED)
 
     def create(self, request, *args, **kwargs):
-        user = get_object_or_404(User, telegram_chat_id=request.data['user'])
-        food = get_object_or_404(Food, pk=request.data['food'])
+        if 'user' not in request.data or 'food' not in request.data:
+            return Response('Недостаточно данных для создания',
+                            status=status.HTTP_400_BAD_REQUEST)
+        user_id = str(request.data['user'])
+        food_id = str(request.data['food'])
+        if not user_id.isdigit() or not food_id.isdigit():
+            return Response('id еды или пользователя должны быть целыми числами',
+                            status=status.HTTP_400_BAD_REQUEST)
+        user = get_object_or_404(User, telegram_chat_id=user_id)
+        food = get_object_or_404(Food, pk=food_id)
         if Cart.objects.filter(user=user, food=food).exists():
             data = Cart.objects.filter(user=user, food=food).get()
             data.amount += 1
@@ -127,8 +135,7 @@ class CartViewSet(viewsets.ModelViewSet):
         else:
             data = Cart.objects.create(user=user,
                                        food=food)
-        serializer = CartSerializer(data=data)
-        serializer.is_valid()
+        serializer = self.get_serializer(data)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def retrieve(self, request, pk):

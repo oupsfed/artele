@@ -7,10 +7,10 @@ check_name_and_slug_patterns = (
             'slug': 'longname'
         },
         ((
-            'Проверьте, что при обработке POST-запроса к `{url}` проверяется '
-            'длина поля `name`: название произведения не '
-            'должно быть длиннее 256 символов.'
-        ),)
+             'Проверьте, что при обработке POST-запроса к `{url}` проверяется '
+             'длина поля `name`: название произведения не '
+             'должно быть длиннее 256 символов.'
+         ),)
     ),
     (
         {
@@ -18,10 +18,10 @@ check_name_and_slug_patterns = (
             'slug': 'l' * 50 + 'simbols'
         },
         ((
-            'Проверьте, что при обработке POST-запроса к `{url}` проверяется '
-            'длина поля `slug`: его содержимое не должно быть длиннее 50 '
-            'символов.'
-        ),)
+             'Проверьте, что при обработке POST-запроса к `{url}` проверяется '
+             'длина поля `slug`: его содержимое не должно быть длиннее 50 '
+             'символов.'
+         ),)
     ),
     (
         {
@@ -29,10 +29,10 @@ check_name_and_slug_patterns = (
             'slug': ':-)'
         },
         ((
-            'Проверьте, что при обработке POST-запроса к `{url}` содержание '
-            'поля `slug` проверяется на соответствие паттерну, указанному в '
-            'спецификации: ^[-a-zA-Z0-9_]+$'
-        ),)
+             'Проверьте, что при обработке POST-запроса к `{url}` содержание '
+             'поля `slug` проверяется на соответствие паттерну, указанному в '
+             'спецификации: ^[-a-zA-Z0-9_]+$'
+         ),)
     )
 )
 invalid_data_for_username_and_email_fields = [
@@ -42,10 +42,10 @@ invalid_data_for_username_and_email_fields = [
             'username': 'valid-username'
         },
         ((
-            'Проверьте, что при обработке {request_method}-запроса к `{url}` '
-            'проверяется длина поля `email`: его содержимое не должно быть '
-            'длиннее 254 символа.'
-        ),)
+             'Проверьте, что при обработке {request_method}-запроса к `{url}` '
+             'проверяется длина поля `email`: его содержимое не должно быть '
+             'длиннее 254 символа.'
+         ),)
     ),
     (
         {
@@ -53,10 +53,10 @@ invalid_data_for_username_and_email_fields = [
             'username': ('a' * 151)
         },
         ((
-            'Проверьте, что при обработке {request_method}-запроса к `{url}` '
-            'проверяется длина поля `username`: его содержимое не должно быть '
-            'длиннее 150 символов.'
-        ),)
+             'Проверьте, что при обработке {request_method}-запроса к `{url}` '
+             'проверяется длина поля `username`: его содержимое не должно быть '
+             'длиннее 150 символов.'
+         ),)
     ),
     (
         {
@@ -64,10 +64,10 @@ invalid_data_for_username_and_email_fields = [
             'username': '|-|aTa|_|_|a'
         },
         ((
-            'Проверьте, что при обработке {request_method}-запроса к `{url}` '
-            'содержание поля `username` проверяется на соответствие '
-            'паттерну, указанному в спецификации: ^[\\w.@+-]+\\z'
-        ),)
+             'Проверьте, что при обработке {request_method}-запроса к `{url}` '
+             'содержание поля `username` проверяется на соответствие '
+             'паттерну, указанному в спецификации: ^[\\w.@+-]+\\z'
+         ),)
     )
 ]
 invalid_data_for_user_patch_and_creation = (
@@ -81,10 +81,10 @@ invalid_data_for_user_patch_and_creation.extend([
             'first_name': 'toolong' + 'g' * 144
         },
         ((
-            'Проверьте, что при обработке POST-запроса к `{url}` '
-            'проверяется длина поля `first_name`: его содержимое не должно '
-            'быть длиннее 150 символов.'
-        ),)
+             'Проверьте, что при обработке POST-запроса к `{url}` '
+             'проверяется длина поля `first_name`: его содержимое не должно '
+             'быть длиннее 150 символов.'
+         ),)
     ),
     (
         {
@@ -93,10 +93,10 @@ invalid_data_for_user_patch_and_creation.extend([
             'last_name': 'toolong' + 'g' * 144
         },
         ((
-            'Проверьте, что при обработке POST-запроса к `{url}` '
-            'проверяется длина поля `last_name`: его содержимое не должно '
-            'быть длиннее 150 символов.'
-        ),)
+             'Проверьте, что при обработке POST-запроса к `{url}` '
+             'проверяется длина поля `last_name`: его содержимое не должно '
+             'быть длиннее 150 символов.'
+         ),)
     )
 ])
 
@@ -194,53 +194,67 @@ def create_categories(admin_client):
     return [data1, data2]
 
 
-def create_genre(admin_client):
+def create_users(client):
+    url = '/api/users/'
     result = []
-    data = {'name': 'Ужасы', 'slug': 'horror'}
+    data = {
+        'telegram_chat_id': 1,
+        'first_name': 'Олег',
+        'last_name': 'Работяга',
+        'username': 'oleg',
+    }
     result.append(data)
-    response = admin_client.post('/api/v1/genres/', data=data)
+    response = client.post(url, data=data)
     assert response.status_code == HTTPStatus.CREATED, (
-        'Если POST-запрос администратора к `/api/v1/genres/` содержит '
+        'Если POST-запрос к `/api/users/` содержит '
         'корректные данные - должен вернуться ответ со статусом 201.'
     )
-    data = {'name': 'Комедия', 'slug': 'comedy'}
+    data = {
+        'telegram_chat_id': 2,
+    }
     result.append(data)
-    admin_client.post('/api/v1/genres/', data=data)
-    data = {'name': 'Драма', 'slug': 'drama'}
+    response = client.post(url, data=data)
+    assert response.status_code == HTTPStatus.CREATED, (
+        'Если POST-запрос к `/api/users/` содержит '
+        'корректные данные - должен вернуться ответ со статусом 201.'
+    )
+    data = {
+        'telegram_chat_id': 3,
+    }
     result.append(data)
-    admin_client.post('/api/v1/genres/', data=data)
+    client.post(url, data=data)
     return result
 
 
-def create_titles(admin_client):
-    genres = create_genre(admin_client)
-    categories = create_categories(admin_client)
+def create_foods(client):
     result = []
     data = {
-        'name': 'Терминатор',
-        'year': 1984,
-        'genre': [genres[0]['slug'], genres[1]['slug']],
-        'category': categories[0]['slug'],
-        'description': 'I`ll be back'
+        'name': 'Суп',
+        'weight': 100,
+        'price': 200,
+        'description': 'Вкусный суп',
+        'image': 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAA'
+                 'AAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII='
     }
-    response = admin_client.post('/api/v1/titles/', data=data)
+    response = client.post('/api/food/', data=data)
     assert response.status_code == HTTPStatus.CREATED, (
-        'Если POST-запрос администратора к `/api/v1/titles/` содержит '
+        'Если POST-запрос к `/api/food/` содержит '
         'корректные данные - должен вернуться ответ со статусом 201.'
     )
     data['id'] = response.json()['id']
     result.append(data)
     data = {
-        'name': 'Крепкий орешек',
-        'year': 1988,
-        'genre': [genres[2]['slug']],
-        'category': categories[1]['slug'],
-        'description': 'Yippie ki yay...'
+        'name': 'Борщ',
+        'weight': 200,
+        'price': 300,
+        'description': 'Вкусный борщ',
+        'image': 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAA'
+                 'AC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII='
     }
-    response = admin_client.post('/api/v1/titles/', data=data)
+    response = client.post('/api/food/', data=data)
     data['id'] = response.json()['id']
     result.append(data)
-    return result, categories, genres
+    return result
 
 
 def create_reviews(admin_client, authors_map):
