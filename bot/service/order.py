@@ -1,17 +1,17 @@
 from http import HTTPStatus
 
-from aiogram.filters.callback_data import CallbackData
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-from bot.middlewares.role import is_guest
-from bot.service.message import send_message_to_admin
-from bot.utils import Action, get_api_answer, post_api_answer
+from middlewares.role import is_guest
+from service.message import send_message_to_admin
+from utils import (Action, ArteleCallbackData, get_api_answer,
+                   post_api_answer)
 
 order_action = Action('order')
 
 
-class OrderCallbackFactory(CallbackData, prefix='order'):
-    action: str
+class OrderCallbackFactory(ArteleCallbackData, prefix='order'):
+    pass
 
 
 async def order_info(user_id: int):

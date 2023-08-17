@@ -1,3 +1,5 @@
+import os
+
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from fpdf import FPDF
@@ -208,7 +210,10 @@ class OrderListViewSet(viewsets.ModelViewSet):
             food_list[order.food.name] += order.amount
         pdf = FPDF()
         pdf.add_page()
-        pdf.add_font('DejaVu', '', 'DejaVuSansCondensed.ttf', uni=True)
+        font = os.path.isfile('./static/font/DejaVuSansCondensed.ttf')
+        if not font:
+            raise FileExistsError('Шрифт не найден')
+        pdf.add_font('DejaVu', '', './static/font/DejaVuSansCondensed.ttf', uni=True)
         pdf.set_font('DejaVu', '', 18)
         pdf.cell(200, 10, txt="Список заказов", ln=1, align="C")
         pdf.cell(200, 10, txt="Всего", ln=1, align="C")

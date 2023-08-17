@@ -2,7 +2,7 @@ from aiogram import Router, types
 from aiogram.filters import Text
 from aiogram.utils.keyboard import ReplyKeyboardBuilder
 
-from bot.middlewares.role import IsAdminMessageMiddleware
+from middlewares.role import IsAdminMessageMiddleware
 
 router = Router()
 router.message.middleware(IsAdminMessageMiddleware())

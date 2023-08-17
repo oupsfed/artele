@@ -2,10 +2,11 @@ import asyncio
 
 from aiogram import Dispatcher
 
-from bot.handlers.admin_panel import add_food, orders_list
-from bot.handlers.guest_panel import access
-from bot.handlers.user_panel import cart, menu, order, start
-from bot.utils import bot
+
+from handlers.admin_panel import add_food, orders_list
+from handlers.guest_panel import access
+from handlers.user_panel import cart, menu, order, start
+from utils import bot
 from handlers.admin_panel import (edit_food, requests_for_access, settings,
                                   user_list)
 

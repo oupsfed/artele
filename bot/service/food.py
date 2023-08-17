@@ -2,14 +2,12 @@ import base64
 import os
 from typing import Optional
 
-from aiogram import Bot
-from aiogram.filters.callback_data import CallbackData
 from aiogram.types import PhotoSize, URLInputFile
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-from bot.middlewares.role import is_admin
-from bot.service.cart import cart_action
-from bot.utils import Action, get_api_answer
+from middlewares.role import is_admin
+from service.cart import cart_action
+from utils import Action, ArteleCallbackData, bot, get_api_answer
 
 FOOD_COL = {
     'name': 'название',
@@ -26,11 +24,9 @@ food_action.update_column = 'update_column'
 food_action.remove_preview = 'remove_preview'
 
 
-class FoodCallbackFactory(CallbackData, prefix='food'):
-    action: str
+class FoodCallbackFactory(ArteleCallbackData, prefix='food'):
     food_id: Optional[int]
     food_column: Optional[str]
-    page: Optional[int] = 1
     for_staff: Optional[bool] = False
 
 
@@ -72,7 +68,8 @@ async def menu_builder(page: int = 1,
             )
         )
         page_buttons += 1
-    rows.append(page_buttons)
+    if page_buttons > 0:
+        rows.append(page_buttons)
     if is_admin(user_id=user_id):
         builder.button(
             text="Добавить товар",
@@ -204,8 +201,7 @@ async def add_food_builder():
     return builder
 
 
-async def download_and_encode_image(bot: Bot,
-                                    photo: PhotoSize):
+async def download_and_encode_image(photo: PhotoSize):
     direction = f"tmp/{photo.file_id}.jpg"
     await bot.download(
         photo,

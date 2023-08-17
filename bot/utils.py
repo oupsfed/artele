@@ -1,12 +1,15 @@
 import json
 import os
+from http import HTTPStatus
+from typing import Optional
 
 import requests
 from aiogram import Bot
+from aiogram.filters.callback_data import CallbackData
 from dotenv import load_dotenv
 from requests import Response
 
-from bot.logger import logger
+from logger import logger
 
 load_dotenv()
 
@@ -37,6 +40,11 @@ class Action:
         return self.callback
 
 
+class ArteleCallbackData(CallbackData, prefix='artele'):
+    action: str
+    page: Optional[int]
+
+
 def get_api_answer(endpoint: str,
                    params=None) -> Response:
     """
@@ -47,15 +55,15 @@ def get_api_answer(endpoint: str,
                     params (dict) : параметры запроса
 
             Returns:
-                    answer (dict): Информация с API-сервиса
+                    answer (Response): Информация с API-сервиса
     """
-    endpoint = f'{URL}{endpoint}'
+    endpoint = f'{URL}api/{endpoint}'
     answer = requests.get(
         url=endpoint,
         headers=HEADERS,
         params=params
     )
-    if answer.status_code != 200:
+    if answer.status_code != HTTPStatus.OK:
         logger.error(f'Запрос к {endpoint} отклонен')
     return answer
 
@@ -70,9 +78,9 @@ def post_api_answer(endpoint: str,
                     data (dict): данные для отправки на API
 
             Returns:
-                    homework (dict): Информация с API-сервиса в формате JSON
+                    answer (Response): Информация с API-сервиса
     """
-    endpoint = f'{URL}{endpoint}'
+    endpoint = f'{URL}api/{endpoint}'
     data = json.dumps(data)
     answer = requests.post(
         url=endpoint,
@@ -85,16 +93,16 @@ def post_api_answer(endpoint: str,
 def patch_api_answer(endpoint: str,
                      data: dict) -> Response:
     """
-    Делает POST запрос к эндпоинту API-сервиса.
+    Делает PATCH запрос к эндпоинту API-сервиса.
 
             Parameters:
                     endpoint (str) : точка доступа
                     data (dict): данные для отправки на API
 
             Returns:
-                    homework (dict): Информация с API-сервиса в формате JSON
+                    answer (Response): Информация с API-сервиса
     """
-    endpoint = f'{URL}{endpoint}'
+    endpoint = f'{URL}api/{endpoint}'
     data = json.dumps(data)
     answer = requests.patch(
         url=endpoint,
@@ -106,15 +114,15 @@ def patch_api_answer(endpoint: str,
 
 def delete_api_answer(endpoint: str) -> Response:
     """
-    Делает GET запрос к эндпоинту API-сервиса.
+    Делает DELETE запрос к эндпоинту API-сервиса.
 
             Parameters:
                     endpoint (str) : точка доступа
 
             Returns:
-                    answer (dict): Информация с API-сервиса
+                   answer (Response): Информация с API-сервиса
     """
-    endpoint = f'{URL}{endpoint}'
+    endpoint = f'{URL}api/{endpoint}'
     answer = requests.delete(
         url=endpoint,
         headers=HEADERS,

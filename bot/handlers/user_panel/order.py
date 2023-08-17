@@ -2,9 +2,9 @@ from aiogram import Bot, Router, types
 from aiogram.filters import Text
 from magic_filter import F
 
-from bot.service.order import (OrderCallbackFactory, order_action,
-                               order_builder, order_create, order_info)
-from bot.utils import post_api_answer
+from service.order import (OrderCallbackFactory, order_action,
+                           order_builder, order_create, order_info)
+from utils import post_api_answer
 
 router = Router()
 

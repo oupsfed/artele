@@ -4,10 +4,10 @@ from aiogram.filters import Text
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from magic_filter import F
 
-from bot.logger import logger
-from bot.service.cart import (CartCallbackFactory, add_to_cart, cart_action,
-                              cart_builder, remove_from_cart)
-from bot.service.food import food_info
+from logger import logger
+from service.cart import (CartCallbackFactory, add_to_cart, cart_action,
+                          cart_builder, remove_from_cart)
+from service.food import food_info
 
 router = Router()
 

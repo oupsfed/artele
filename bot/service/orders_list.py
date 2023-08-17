@@ -1,11 +1,11 @@
 from http import HTTPStatus
 from typing import Optional
 
-from aiogram.filters.callback_data import CallbackData
 from aiogram.types import URLInputFile
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-from bot.utils import Action, get_api_answer, post_api_answer
+from utils import (Action, ArteleCallbackData, get_api_answer,
+                   post_api_answer, URL)
 
 orders_list_actions = Action('ord_list')
 orders_list_actions.filter_by_user = 'by_user'
@@ -15,11 +15,9 @@ orders_list_actions.order_done = 'ord_done'
 orders_list_actions.order_cancel = 'ord_cancel'
 
 
-class OrderListCallbackFactory(CallbackData, prefix='ord_list'):
-    action: str
+class OrderListCallbackFactory(ArteleCallbackData, prefix='ord_list'):
     food_list: Optional[int]
     user_name: Optional[str]
-    page: Optional[int]
 
 
 async def order_list_by_food():
@@ -151,8 +149,9 @@ async def order_cancel(user_name: str):
 
 
 async def download_pdf():
+    pdf_url = f'{URL}media/order.pdf'
     pdf_from_url = URLInputFile(
-        'http://127.0.0.1:8000/media/order.pdf',
+        pdf_url,
         filename='Заказы.pdf'
     )
     return pdf_from_url
