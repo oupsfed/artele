@@ -3,7 +3,7 @@ import os
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from fpdf import FPDF
-from rest_framework import status, viewsets
+from rest_framework import status, viewsets, mixins
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
@@ -13,7 +13,7 @@ from food.models import Cart, Food, Order
 from users.models import User
 
 from .serializers import (CartSerializer, FoodSerializer, MessageSerializer,
-                          OrderSerializer, UserSerializer)
+                          OrderSerializer, UserSerializer, OrderCreateSerializer)
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -138,16 +138,30 @@ class CartViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(data)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    def retrieve(self, request, pk):
-        cart = Cart.objects.filter(user__telegram_chat_id=pk)
-        serializer = CartSerializer(data=cart, many=True)
-        serializer.is_valid()
-        return Response(serializer.data)
+    def destroy(self, request, *args, **kwargs):
+        cart = self.get_object()
+        cart.amount -= 1
+        cart.save()
+        if cart.amount == 0:
+            cart.delete()
+        serializer = self.get_serializer(cart)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def update(self, request, *args, **kwargs):
+        cart = self.get_object()
+        cart.amount += 1
+        cart.save()
+        serializer = self.get_serializer(cart)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class OrderViewSet(viewsets.ModelViewSet):
+class OrderViewSet(mixins.ListModelMixin,
+                   mixins.RetrieveModelMixin,
+                   mixins.CreateModelMixin,
+                   mixins.UpdateModelMixin,
+                   viewsets.GenericViewSet):
     queryset = Order.objects.all()
-    serializer_class = OrderSerializer
+    serializer_class = OrderCreateSerializer
     pagination_class = None
     filter_backends = (DjangoFilterBackend,)
     filterset_fields = ('status', 'user__telegram_chat_id')

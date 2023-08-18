@@ -26,12 +26,15 @@ class Order(models.Model):
     user = models.ForeignKey(User,
                              on_delete=models.CASCADE,
                              related_name='order')
-    food = models.ForeignKey(Food,
-                             on_delete=models.CASCADE,
-                             related_name='order')
-    amount = models.PositiveIntegerField(validators=[MinValueValidator(1)], default=1)
+    food = models.ManyToManyField(Food, through='FoodOrder')
     status = models.CharField(max_length=256,
                               choices=[('IP', 'in_progress'),
                                        ('D', 'done'),
                                        ('C', 'cancelled')],
                               default='IP')
+
+
+class FoodOrder(models.Model):
+    food = models.ForeignKey(Food, on_delete=models.CASCADE)
+    order = models.ForeignKey(Order, on_delete=models.CASCADE)
+    amount = models.PositiveIntegerField(validators=[MinValueValidator(1)], default=1)

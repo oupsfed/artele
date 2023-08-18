@@ -5,7 +5,7 @@ import pytest
 
 from dotenv import load_dotenv
 
-from tests.utils import check_pagination, create_foods, create_users
+from tests.utils import check_pagination, create_foods, create_users, create_carts
 
 pytestmark = pytest.mark.django_db
 
@@ -113,4 +113,85 @@ class TestCartAPI:
             f'пользователя к `{url}` возвращается информация о правах '
             'пользователя. Если прав нет - значением '
             'поля `role` должено быть `GUEST`.'
+        )
+
+    def test_03_cart_detail(self, client):
+        users, foods, carts = create_carts(client)
+        url = f'/api/cart/{carts[0]["id"]}/'
+        response = client.get(url)
+        assert response.status_code != HTTPStatus.NOT_FOUND, (
+            'Эндпоинт `/api/cart/{cart_id}/` не найден, проверьте '
+            'настройки в *urls.py*.'
+        )
+        assert response.status_code == HTTPStatus.OK, (
+            'Проверьте, что GET-запрос неавторизованного пользователя к '
+            '`/api/cart/{cart_id}/` возвращает ответ со статусом 200.'
+        )
+        data = response.json()
+        assert isinstance(data.get('id'), int), (
+            'Поле `id` отсутствует или содержит некорректное значение '
+            'в ответе на GET-запрос неавторизованного пользователя к '
+            '`/api/cart/{cart_id}/`.'
+        )
+        assert data.get('food')['name'] == foods[0]['name'], (
+            'Поле `food` отсутствует или содержит некорректное значение '
+            'в ответе на GET-запрос неавторизованного пользователя к '
+            '`/api/cart/{cart_id}/`.'
+        )
+        assert (data.get('user')['telegram_chat_id']
+                == users[0]['telegram_chat_id']), (
+            'Поле `user` отсутствует или содержит некорректное значение '
+            'в ответе на GET-запрос неавторизованного пользователя к '
+            '`/api/cart/{cart_id}/`.'
+        )
+        assert data.get('amount') == 1, (
+            'Поле `amount` отсутствует или содержит некорректное значение '
+            'в ответе на GET-запрос неавторизованного пользователя к '
+            '`/api/cart/{cart_id}/`.'
+        )
+        invalid_data = {
+            'user': users[1]['telegram_chat_id'],
+            'food': foods[1]['id']
+        }
+        response = client.patch(
+            url, data=invalid_data, content_type='application/json'
+        )
+        assert response.status_code == HTTPStatus.OK, (
+            'Проверьте, что PATCH-запрос к '
+            '`/api/cart/{cart_id}/` возвращает ответ со статусом 200.'
+        )
+        updated_data = response.json()
+        assert updated_data.get('amount') == 2, (
+            'Проверьте что PATCH-запрос к `/api/cart/cart_id/` '
+            'увеличивает количество `amount` на 1'
+        )
+        assert updated_data.get('food')['name'] == foods[0]['name'], (
+            'Проверьте что PATCH-запрос к `/api/cart/cart_id/` '
+            'запрещено менять поле `user`'
+        )
+        assert (updated_data.get('user')['telegram_chat_id']
+                == users[0]['telegram_chat_id']), (
+            'Проверьте что PATCH-запрос к `/api/cart/cart_id/` '
+            'запрещено менять поле `user`'
+        )
+        response = client.delete(url)
+        assert response.status_code == HTTPStatus.OK, (
+            'Проверьте, что DELETE-запрос к '
+            '`/api/cart/{cart_id}/` возвращает ответ со статусом 200.'
+        )
+        updated_data = response.json()
+        assert updated_data.get('amount') == 1, (
+            'Проверьте что DELETE-запрос к `/api/cart/cart_id/` '
+            'уменьшает количество `amount` на 1'
+        )
+        response = client.delete(url)
+        updated_data = response.json()
+        assert updated_data.get('amount') == 0, (
+            'Проверьте что DELETE-запрос к `/api/cart/cart_id/` '
+            'уменьшает количество `amount` на 1'
+        )
+        response = client.get(url)
+        assert response.status_code == HTTPStatus.NOT_FOUND, (
+            'Проверьте что при `amount` равному нулю '
+            'объект cart удаляется'
         )

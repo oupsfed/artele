@@ -162,15 +162,16 @@ def create_single_review(client, title_id, text, score):
     return response
 
 
-def create_single_comment(client, title_id, review_id, text):
-    data = {'text': text}
+def create_single_cart(client, food_id, user_id):
+    data = {'user': user_id,
+            'food': food_id}
     response = client.post(
-        f'/api/v1/titles/{title_id}/reviews/{review_id}/comments/',
+        f'/api/cart/',
         data=data
     )
     assert response.status_code == HTTPStatus.CREATED, (
         'Если POST-запрос авторизованного пользователя к '
-        '`/api/v1/titles/{title_id}/reviews/{review_id}/comments/` содержит '
+        '`/api/cart/` содержит '
         'корректные данные - должен вернуться ответ со статусом 201.'
     )
     return response
@@ -257,23 +258,18 @@ def create_foods(client):
     return result
 
 
-def create_reviews(admin_client, authors_map):
-    titles, _, _ = create_titles(admin_client)
+def create_carts(client):
+    foods = create_foods(client)
+    users = create_users(client)
     result = []
-    text = 'review number {}'
-    for idx, (user, user_client) in enumerate(authors_map.items(), 1):
-        response = create_single_review(
-            user_client, titles[0]['id'], text.format(idx), 5
+    for food in foods:
+        response = create_single_cart(
+            client=client,
+            user_id=users[0]['telegram_chat_id'],
+            food_id=food['id']
         )
-        result.append(
-            {
-                'id': response.json()['id'],
-                'author': user.username,
-                'text': text.format(idx),
-                'score': 5
-            }
-        )
-    return result, titles
+        result.append(response.json())
+    return users, foods, result
 
 
 def create_comments(admin_client, authors_map):
