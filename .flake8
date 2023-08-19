@@ -4,4 +4,5 @@ max-line-length = 79
 max-complexity = 10
 exclude = 
    tests
+   venv
    alembic/versions/*.py

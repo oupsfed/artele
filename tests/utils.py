@@ -272,22 +272,14 @@ def create_carts(client):
     return users, foods, result
 
 
-def create_comments(admin_client, authors_map):
-    reviews, titles = create_reviews(admin_client, authors_map)
-    text = 'comment number {}'
-    result = []
-    for idx, (user, user_client) in enumerate(authors_map.items(), 1):
-        response = create_single_comment(
-            user_client, titles[0]['id'], reviews[0]['id'], text.format(idx)
-        )
-        result.append(
-            {
-                'id': response.json()['id'],
-                'author': user.username,
-                'text': text.format(idx),
-            }
-        )
-    return result, reviews, titles
+def create_single_order(client):
+    users, foods, carts = create_carts(client)
+    url = '/api/order/'
+    post_data_1 = {
+        'user': users[0]['telegram_chat_id']
+    }
+    response = client.post(url, data=post_data_1)
+    return response.json()
 
 
 def check_fields(obj_type, url_pattern, obj, expected_data, detail=False):

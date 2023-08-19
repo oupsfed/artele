@@ -1,19 +1,22 @@
 import os
+from http import HTTPStatus
 
+from django.db.models import F, Sum
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from fpdf import FPDF
-from rest_framework import status, viewsets, mixins
+from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 
-from core.models import Message
 from food.models import Cart, Food, Order
 from users.models import User
 
-from .serializers import (CartSerializer, FoodSerializer, MessageSerializer,
-                          OrderSerializer, UserSerializer, OrderCreateSerializer)
+from .filters import CartFilter, OrderFilter
+from .serializers import (CartCreateSerializer, FoodSerializer,
+                          OrderCreateSerializer, OrderSerializer,
+                          UserSerializer)
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -49,73 +52,11 @@ class FoodViewSet(viewsets.ModelViewSet):
 
 class CartViewSet(viewsets.ModelViewSet):
     queryset = Cart.objects.all()
-    serializer_class = CartSerializer
+    serializer_class = CartCreateSerializer
     filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ('user__telegram_chat_id',
-                        'food__id')
+    filterset_class = CartFilter
     pagination_class = PageNumberPagination
     pagination_class.page_size = 3
-
-    @action(
-        methods=['GET'],
-        detail=True,
-        url_path='sum',
-    )
-    def cart_sum(self, request, pk):
-        user = User.objects.get(telegram_chat_id=pk)
-        cart_list = Cart.objects.filter(user=user)
-        cart_sum = 0
-        for cart in cart_list:
-            cart_sum += cart.amount * cart.food.price
-        return Response(cart_sum, status=status.HTTP_200_OK)
-
-    @action(
-        methods=['POST'],
-        detail=True,
-        url_path='add',
-    )
-    def add_to_cart(self, request, pk):
-        cart = Cart.objects.get(pk=pk)
-        cart.amount += 1
-        cart.save()
-        serializer = self.get_serializer(cart)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-    @action(
-        methods=['POST'],
-        detail=True,
-        url_path='delete',
-    )
-    def delete_from_cart(self, request, pk):
-        cart = Cart.objects.get(pk=pk)
-        cart.amount -= 1
-        cart.save()
-        if cart.amount == 0:
-            cart.delete()
-        serializer = self.get_serializer(cart)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    @action(
-        methods=['POST'],
-        detail=True,
-        url_path='order',
-    )
-    def cart_order(self, request, pk):
-        user = User.objects.get(telegram_chat_id=pk)
-        is_order_exist = Order.objects.filter(user=user,
-                                              status='IP').exists()
-        if is_order_exist:
-            return Response('У вас уже есть созданный заказ',
-                            status=status.HTTP_400_BAD_REQUEST)
-        cart_list = Cart.objects.filter(user=user)
-        for cart in cart_list:
-            Order.objects.create(
-                food=cart.food,
-                user=cart.user,
-                amount=cart.amount
-            )
-            cart.delete()
-        return Response('Заказ успешно создан', status=status.HTTP_201_CREATED)
 
     def create(self, request, *args, **kwargs):
         if 'user' not in request.data or 'food' not in request.data:
@@ -164,51 +105,26 @@ class OrderViewSet(mixins.ListModelMixin,
     serializer_class = OrderCreateSerializer
     pagination_class = None
     filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ('status', 'user__telegram_chat_id')
+    filterset_class = OrderFilter
 
     @action(
-        methods=['POST'],
+        methods=['GET'],
         detail=False,
-        url_path='cancel',
+        url_path='filter_by_food',
     )
-    def order_cancel(self, request, *args, **kwargs):
-        if 'user_id' in request.data:
-            user_id = request.data['user_id']
-            Order.objects.filter(status='IP',
-                                 user__telegram_chat_id=user_id
-                                 ).update(
-                status='C'
-            )
-        if 'user_name' in request.data:
-            user_name = request.data['user_name']
-            Order.objects.filter(status='IP',
-                                 user__name=user_name
-                                 ).update(
-                status='C'
-            )
-        return Response('Успешно удалено', status=status.HTTP_204_NO_CONTENT)
-
-    @action(
-        methods=['POST'],
-        detail=False,
-        url_path='done',
-    )
-    def order_done(self, request, *args, **kwargs):
-        user_name = request.data['user_name']
-        Order.objects.filter(status='IP',
-                             user__name=user_name
-                             ).update(
-            status='D'
+    def filter_by_food(self, request):
+        order_data = Order.objects.filter(status='IP')
+        order_data = order_data.values(
+            food_id=F('food__id'),
+            food_name=F('food__name'),
+            food_price=F('food__price'),
+            weight=F('food__weight')
+        ).annotate(
+            amount=Sum('foodorder__amount'),
+            total_weight=F('food__weight') * Sum('foodorder__amount'),
+            total_price=F('food__price') * Sum('foodorder__amount'),
         )
-        return Response('Успешно выполнено', status=status.HTTP_200_OK)
-
-
-class OrderListViewSet(viewsets.ModelViewSet):
-    queryset = Order.objects.all()
-    serializer_class = OrderSerializer
-    pagination_class = None
-    filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ('status', 'user__name')
+        return Response(order_data)
 
     @action(
         methods=['GET'],
@@ -216,18 +132,13 @@ class OrderListViewSet(viewsets.ModelViewSet):
         url_path='download',
     )
     def download(self, request):
-        order_list = Order.objects.filter(status='IP')
-        user_list = {}
-        food_list = {}
-        for order in order_list:
-            if order.user.name not in user_list:
-                user_list[order.user.name] = {}
-            if order.food.name not in user_list[order.user.name]:
-                user_list[order.user.name][order.food.name] = 0
-            user_list[order.user.name][order.food.name] += order.amount
-            if order.food.name not in food_list:
-                food_list[order.food.name] = 0
-            food_list[order.food.name] += order.amount
+        order_data = Order.objects.filter(status='IP')
+        filtered_by_food_data = order_data.values(
+            food_id=F('food__id'),
+            food_name=F('food__name'),
+        ).annotate(
+            amount=Sum('foodorder__amount')
+        )
         pdf = FPDF()
         pdf.add_page()
         font = os.path.isfile('./static/font/DejaVuSansCondensed.ttf')
@@ -243,34 +154,33 @@ class OrderListViewSet(viewsets.ModelViewSet):
         pdf.cell(120, 10, 'Название', 1, align="C")
         pdf.cell(40, 10, 'Количество', 1, ln=1, align="C")
         i = 0
-        for name, amount in food_list.items():
+        for food in filtered_by_food_data:
             i += 1
             pdf.cell(20, 10, f'{i}.', 1, align="C")
-            pdf.cell(120, 10, name, 1, align="C")
-            pdf.cell(40, 10, f'{amount} шт.', 1, ln=1, align="C")
+            pdf.cell(120, 10, food['food_name'], 1, align="C")
+            pdf.cell(40, 10, f'{food["amount"]} шт.', 1, ln=1, align="C")
 
         pdf.set_font('DejaVu', '', 18)
         pdf.cell(200, 20, txt="По каждому покупателю", ln=1, align="C")
         pdf.set_font('DejaVu', '', 14)
-        for user_name, food_data in user_list.items():
+        for order in order_data:
             i = 0
-            pdf.cell(200, 10, txt=user_name, ln=1, align="C")
+            pdf.cell(200, 10, txt=order.user.name, ln=1, align="C")
             pdf.cell(20, 10, '№ п/п', 1, align="C")
             pdf.cell(120, 10, 'Название', 1, align="C")
             pdf.cell(40, 10, 'Количество', 1, ln=1, align="C")
-            for name, amount in food_data.items():
+            for food_item in order.food.values(food_id=F('id'),
+                                               food_name=F('name'),
+                                               amount=F('foodorder__amount')):
                 i += 1
                 pdf.cell(20, 10, f'{i}.', 1, align="C")
-                pdf.cell(120, 10, name, 1, align="C")
-                pdf.cell(40, 10, f'{amount} шт.', 1, ln=1, align="C")
+                pdf.cell(120, 10, food_item["food_name"], 1, align="C")
+                pdf.cell(40, 10, f'{food_item["amount"]} шт.', 1, ln=1, align="C")
         pdf.output("media/order.pdf")
+        serializer = OrderSerializer(data=order_data, many=True)
+        serializer.is_valid()
         return Response({
-            'by_food': food_list,
-            'by_user': user_list
-        })
+            'filtered_by_food': filtered_by_food_data,
+            'filtered_by_user': serializer.data
 
-
-class MessageViewSet(viewsets.ModelViewSet):
-    queryset = Message.objects.all()
-    serializer_class = MessageSerializer
-    lookup_field = 'command'
+        }, status=HTTPStatus.OK)

@@ -89,7 +89,7 @@ class TestCartAPI:
             if element['user']['telegram_chat_id'] == post_data_1['user']:
                 user = element['user']
 
-        assert user.get('name') is None, (
+        assert user.get('name') == 'Неизвестный пользователь', (
             'Проверьте, что при GET-запросе неавторизованного '
             f'пользователя к `{url}` возвращается информация о имени '
             'пользователя. Если имени нет - значением '

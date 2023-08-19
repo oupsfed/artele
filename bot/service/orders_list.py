@@ -1,11 +1,9 @@
-from http import HTTPStatus
 from typing import Optional
 
 from aiogram.types import URLInputFile
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-from utils import (Action, ArteleCallbackData, get_api_answer,
-                   post_api_answer, URL)
+from utils import URL, Action, ArteleCallbackData, get_api_answer
 
 orders_list_actions = Action('ord_list')
 orders_list_actions.filter_by_user = 'by_user'
@@ -16,29 +14,30 @@ orders_list_actions.order_cancel = 'ord_cancel'
 
 
 class OrderListCallbackFactory(ArteleCallbackData, prefix='ord_list'):
-    food_list: Optional[int]
-    user_name: Optional[str]
+    order_id: Optional[int]
 
 
 async def order_list_by_food():
-    answer = get_api_answer('order_list/download/').json()
-    order_count = len(answer['by_user'])
-    text = (f'На данный момент оформлено {order_count} заказов.\n'
-            f'Всего было заказано: \n')
-    for name, amount in answer['by_food'].items():
-        text += f'{name} - {amount} шт.\n'
-    text += 'Вы можете посмотреть отдельно что заказал каждый покупатель'
+    answer = get_api_answer('order/filter_by_food/').json()
+    text = 'Всего было заказано: \n'
+    for food in answer:
+        text += (f'{food["food_name"]} - <b>{food["amount"]} шт. '
+                 f'({food["total_weight"]} г.)</b>\n')
     return text
 
 
 async def order_list_by_user():
-    answer = get_api_answer('order_list/download/').json()
-    order_count = len(answer['by_user'])
+    answer = get_api_answer('order/',
+                            params={
+                                'status': 'IP'
+                            }).json()
+    order_count = len(answer)
     text = f'На данный момент оформлено {order_count} заказов:\n'
-    for name, food_list in answer['by_user'].items():
-        text += f'<b>{name}</b>:\n'
-        for food_name, amount in food_list.items():
-            text += f'{food_name} - {amount} шт.\n'
+    for order in answer:
+        text += f'<b>{order["user"]["name"]}</b>:\n'
+        for food_pos in order["food"]:
+            text += (f'{food_pos["name"]} - <b>{food_pos["amount"]} шт. '
+                     f'({food_pos["total_weight"]} г.)</b>\n')
     return text
 
 
@@ -72,14 +71,17 @@ async def order_list_builder(by_user=False):
 
 
 async def order_update_builder():
-    answer = get_api_answer('order_list/download/').json()
+    answer = get_api_answer('order/',
+                            params={
+                                'status': 'IP'
+                            }).json()
     builder = InlineKeyboardBuilder()
-    for name, food_list in answer['by_user'].items():
+    for order in answer:
         builder.button(
-            text=name,
+            text=order['user']['name'],
             callback_data=OrderListCallbackFactory(
                 action=orders_list_actions.get,
-                user_name=name
+                order_id=order['id']
             )
         )
     builder.button(
@@ -92,32 +94,29 @@ async def order_update_builder():
     return builder
 
 
-async def order_user_info(user_name: str):
-    answer = get_api_answer('order_list/',
-                            params={
-                                'user__name': user_name,
-                                'status': 'IP'
-                            }).json()
-    text = f'Заказ пользователя {user_name}:\n'
-    for order in answer:
-        text += f'- {order["food"]["name"]} - {order["amount"]} шт.\n'
+async def order_user_info(order_id: int):
+    answer = get_api_answer(f'order/{order_id}/').json()
+    text = f'Заказ пользователя {answer["user"]["name"]}:\n'
+    for food in answer['food']:
+        text += (f'{food["name"]} - <b>{food["amount"]} шт. '
+                 f'({food["total_weight"]} г.)</b>\n')
     return text
 
 
-async def order_user_builder(user_name: str):
+async def order_user_builder(order_id: int):
     builder = InlineKeyboardBuilder()
     builder.button(
         text='Выполнен',
         callback_data=OrderListCallbackFactory(
             action=orders_list_actions.order_done,
-            user_name=user_name
+            order_id=order_id
         )
     )
     builder.button(
         text='Отменить заказ',
         callback_data=OrderListCallbackFactory(
             action=orders_list_actions.order_cancel,
-            user_name=user_name
+            order_id=order_id
         )
     )
     builder.button(
@@ -130,25 +129,8 @@ async def order_user_builder(user_name: str):
     return builder
 
 
-async def order_done(user_name: str):
-    answer = post_api_answer('order/done/',
-                             data={
-                                 'user_name': user_name
-                             })
-    return answer.json()
-
-
-async def order_cancel(user_name: str):
-    answer = post_api_answer('order/cancel/',
-                             data={
-                                 'user_name': user_name
-                             })
-    if answer.status_code == HTTPStatus.NO_CONTENT:
-        return 'Заказ успешно удален'
-    return 'Произошла ошибка при удалении товара'
-
-
 async def download_pdf():
+    get_api_answer('order/download/')
     pdf_url = f'{URL}media/order.pdf'
     pdf_from_url = URLInputFile(
         pdf_url,

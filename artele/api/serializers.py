@@ -2,12 +2,10 @@ import base64
 
 from django.core.files.base import ContentFile
 from django.db.models import F
-from django.shortcuts import get_object_or_404
 from rest_framework import serializers
-
-from core.models import Message
-from food.models import Cart, Food, Order, FoodOrder
 from rest_framework.exceptions import ValidationError
+
+from food.models import Cart, Food, FoodOrder, Order
 from users.models import User
 
 
@@ -72,32 +70,44 @@ class CartSerializer(serializers.ModelSerializer):
         )
         read_only_fields = ('amount',)
 
-    def validate_user(self, value):
-        if type(value) != int:
-            raise ValidationError(
-                'id пользователя не может быть строкой')
-        return value
 
-
-class FoodOrderSerializer(serializers.ModelSerializer):
-    amount = serializers.SerializerMethodField()
-    total_price = serializers.SerializerMethodField()
+class CartCreateSerializer(serializers.ModelSerializer):
+    user = serializers.IntegerField()
+    food = serializers.IntegerField()
 
     class Meta:
-        model = Food
+        model = Cart
         fields = (
-            'id',
-            'name',
-            'price',
-            'amount',
-            'total_price'
+            'user',
+            'food',
         )
 
-    def get_amount(self, obj):
-        return FoodOrder.objects.filter()
+    def to_representation(self, instance):
+        serializer = CartSerializer(instance,
+                                    context=self.context)
+        return serializer.data
 
-    def get_total_price(self, obj):
-        return 1
+    def validate_user(self, value):
+        if not isinstance(value, int):
+            raise ValidationError(
+                'id пользователя не может быть строкой')
+        exist = User.objects.get(telegram_chat_id=value).exists()
+        if not exist:
+            raise ValidationError(
+                'пользователя не существует'
+            )
+        return value
+
+    def validate_food(self, value):
+        if not isinstance(value, int):
+            raise ValidationError(
+                'id товара не может быть строкой')
+        exist = Food.objects.get(pk=value).exists()
+        if not exist:
+            raise ValidationError(
+                'Товар не существует'
+            )
+        return value
 
 
 class OrderSerializer(serializers.ModelSerializer):
@@ -125,7 +135,11 @@ class OrderSerializer(serializers.ModelSerializer):
             'id',
             'name',
             'price',
+            'weight',
             amount=F('foodorder__amount'),
+        ).annotate(
+            total_weight=F('weight') * F('foodorder__amount'),
+            total_price=F('price') * F('foodorder__amount')
         )
 
     def get_total_price(self, obj):
@@ -145,6 +159,7 @@ class OrderCreateSerializer(serializers.ModelSerializer):
         model = Order
         fields = (
             'user',
+            'status',
         )
 
     def validate_user(self, value):
@@ -165,7 +180,8 @@ class OrderCreateSerializer(serializers.ModelSerializer):
         user = User.objects.get(telegram_chat_id=user_id)
         cart_list = Cart.objects.filter(user=user)
         order = Order.objects.create(
-            user=user
+            user=user,
+            status='IP'
         )
         for cart in cart_list:
             FoodOrder.objects.create(
@@ -176,10 +192,13 @@ class OrderCreateSerializer(serializers.ModelSerializer):
             cart.delete()
         return order
 
+    def update(self, instance, validated_data):
+        instance.status = validated_data.get('status', instance.status)
+        instance.save()
+        return instance
 
-class OrderListSerializer(serializers.ModelSerializer):
-    user = UserSerializer()
-    food = FoodSerializer()
+
+class OrderUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
@@ -187,16 +206,10 @@ class OrderListSerializer(serializers.ModelSerializer):
             'id',
             'user',
             'food',
-            'status'
+            'status',
         )
-        read_only_fields = ('status',)
-
-
-class MessageSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Message
-        fields = (
-            'command',
-            'text',
-            'description',
+        read_only_fields = (
+            'id',
+            'user',
+            'food'
         )

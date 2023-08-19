@@ -4,9 +4,8 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from middlewares.role import IsAdminMessageMiddleware
 from service.access import (AccessCallbackFactory, access_action,
-                            access_create, access_get_builder,
-                            access_get_info, access_list_builder,
-                            access_remove)
+                            access_create, access_get_builder, access_get_info,
+                            access_list_builder, access_remove)
 
 router = Router()
 router.message.middleware(IsAdminMessageMiddleware())

@@ -7,9 +7,8 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from middlewares.role import IsAdminMessageMiddleware
 from service.food import (FOOD_COL, FoodCallbackFactory,
-                          admin_edit_food_builder,
-                          download_and_encode_image, food_action,
-                          food_builder, food_info, menu_builder)
+                          admin_edit_food_builder, download_and_encode_image,
+                          food_action, food_builder, food_info, menu_builder)
 from utils import delete_api_answer, patch_api_answer
 
 MAIN_MESSAGE = 'Меню'

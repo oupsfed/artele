@@ -13,7 +13,14 @@ from logger import logger
 
 load_dotenv()
 
+DEBUG = True
+
+
 URL = os.getenv('URL')
+
+if DEBUG:
+    URL = os.getenv('URL_DEV')
+
 HEADERS = {'Content-type': 'application/json',
            'Content-Encoding': 'utf-8'}
 token = os.getenv('TOKEN')

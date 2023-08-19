@@ -19,7 +19,6 @@ ALLOWED_HOSTS = [
 
 CSRF_TRUSTED_ORIGINS = ['http://localhost']
 
-
 AUTH_USER_MODEL = 'users.user'
 
 INSTALLED_APPS = [
@@ -34,7 +33,6 @@ INSTALLED_APPS = [
     'users',
     'food',
     'api',
-    'core',
 ]
 
 MIDDLEWARE = [
@@ -107,8 +105,6 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_TZ = True
-
-
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')

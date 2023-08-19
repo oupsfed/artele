@@ -1,9 +1,9 @@
 from aiogram import Bot, F, Router, types
 from aiogram.filters import Text
 
+from bot.service.order import order_update
 from middlewares.role import IsAdminMessageMiddleware
 from service.orders_list import (OrderListCallbackFactory, download_pdf,
-                                 order_cancel, order_done,
                                  order_list_builder, order_list_by_food,
                                  order_list_by_user, order_update_builder,
                                  order_user_builder, order_user_info,
@@ -77,8 +77,8 @@ async def callbacks_show_food(
         callback: types.CallbackQuery,
         callback_data: OrderListCallbackFactory
 ):
-    text = await order_user_info(callback_data.user_name)
-    builder = await order_user_builder(callback_data.user_name)
+    text = await order_user_info(callback_data.order_id)
+    builder = await order_user_builder(callback_data.order_id)
     await callback.message.edit_text(
         text,
         reply_markup=builder.as_markup()
@@ -90,7 +90,8 @@ async def callbacks_show_food(
         callback: types.CallbackQuery,
         callback_data: OrderListCallbackFactory
 ):
-    text = await order_done(callback_data.user_name)
+    text, answer = await order_update(order_id=callback_data.order_id,
+                                      status='D')
     await callback.message.answer(
         text
     )
@@ -102,7 +103,8 @@ async def callbacks_show_food(
         callback: types.CallbackQuery,
         callback_data: OrderListCallbackFactory
 ):
-    text = await order_cancel(callback_data.user_name)
+    text, answer = await order_update(order_id=callback_data.order_id,
+                                      status='C')
     await callback.message.answer(
         text
     )
