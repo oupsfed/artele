@@ -3,27 +3,17 @@ name: Artele-app workflow
 on: [push]
 
 jobs:
-  db:
-    runs-on: ubuntu-latest
-
-    services:
-      postgres:
-        image: postgres:latest
-        env:
-          POSTGRES_DB: db
-          POSTGRES_PASSWORD: 3654
-          POSTGRES_USER: postgres
-        ports:
-          - 5432:5432
-        # Set health checks to wait until postgres has started
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
   tests:
     runs-on: ubuntu-latest
-
+    services:
+          db:
+            image: postgres
+            env:
+              POSTGRES_DB: postgres
+              POSTGRES_USER: postgres
+              POSTGRES_PASSWORD: 3654
+            ports:
+              - 5432:5432
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python
