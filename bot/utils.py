@@ -7,9 +7,8 @@ import requests
 from aiogram import Bot
 from aiogram.filters.callback_data import CallbackData
 from dotenv import load_dotenv
-from requests import Response
-
 from logger import logger
+from requests import Response
 
 load_dotenv()
 
@@ -89,12 +88,11 @@ def post_api_answer(endpoint: str,
     """
     endpoint = f'{URL}api/{endpoint}'
     data = json.dumps(data)
-    answer = requests.post(
+    return requests.post(
         url=endpoint,
         data=data,
         headers=HEADERS
     )
-    return answer
 
 
 def patch_api_answer(endpoint: str,
@@ -111,12 +109,11 @@ def patch_api_answer(endpoint: str,
     """
     endpoint = f'{URL}api/{endpoint}'
     data = json.dumps(data)
-    answer = requests.patch(
+    return requests.patch(
         url=endpoint,
         data=data,
         headers=HEADERS
     )
-    return answer
 
 
 def delete_api_answer(endpoint: str) -> Response:
@@ -130,8 +127,7 @@ def delete_api_answer(endpoint: str) -> Response:
                    answer (Response): Информация с API-сервиса
     """
     endpoint = f'{URL}api/{endpoint}'
-    answer = requests.delete(
+    return requests.delete(
         url=endpoint,
         headers=HEADERS,
     )
-    return answer

@@ -2,10 +2,10 @@ import os
 from http import HTTPStatus
 
 import pytest
-
 from dotenv import load_dotenv
 
-from tests.utils import check_pagination, create_foods, create_users, create_carts, create_single_order
+from tests.utils import (check_pagination, create_carts, create_foods,
+                         create_single_order, create_users)
 
 pytestmark = pytest.mark.django_db
 

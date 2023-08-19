@@ -2,7 +2,10 @@
 ignore = E501, E265, F811, PT001, DJ05, D100, D105, D104, W504, W292
 max-line-length = 79
 max-complexity = 10
-exclude = 
-   tests
-   venv
+exclude =
+   */migrations/,
+   tests,
+   */venv/,
+   venv/
+   env/
    alembic/versions/*.py

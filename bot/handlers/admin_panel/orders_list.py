@@ -1,13 +1,13 @@
 from aiogram import Bot, F, Router, types
 from aiogram.filters import Text
-
-from bot.service.order import order_update
 from middlewares.role import IsAdminMessageMiddleware
 from service.orders_list import (OrderListCallbackFactory, download_pdf,
                                  order_list_builder, order_list_by_food,
                                  order_list_by_user, order_update_builder,
                                  order_user_builder, order_user_info,
                                  orders_list_actions)
+
+from bot.service.order import order_update
 
 router = Router()
 router.message.middleware(IsAdminMessageMiddleware())

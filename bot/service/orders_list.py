@@ -2,7 +2,6 @@ from typing import Optional
 
 from aiogram.types import URLInputFile
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-
 from utils import URL, Action, ArteleCallbackData, get_api_answer
 
 orders_list_actions = Action('ord_list')
@@ -132,8 +131,7 @@ async def order_user_builder(order_id: int):
 async def download_pdf():
     get_api_answer('order/download/')
     pdf_url = f'{URL}media/order.pdf'
-    pdf_from_url = URLInputFile(
+    return URLInputFile(
         pdf_url,
         filename='Заказы.pdf'
     )
-    return pdf_from_url

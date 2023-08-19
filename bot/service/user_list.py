@@ -2,7 +2,6 @@ from http import HTTPStatus
 from typing import Optional
 
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-
 from logger import logger
 from service.message import send_message_to_user
 from utils import Action, ArteleCallbackData, get_api_answer, patch_api_answer
@@ -66,10 +65,9 @@ async def user_list_builder(page: int = 1):
 async def user_list_get_info(user_id: int):
     answer = get_api_answer(f'users/{user_id}')
     user = answer.json()
-    text = (f"Имя: {user['name']} \n"
+    return (f"Имя: {user['name']} \n"
             f"Телефон: {user['phone_number']} \n"
             )
-    return text
 
 
 async def user_list_get_builder(user_id: int,

@@ -24,3 +24,4 @@ async def user_create(telegram_chat_id: int,
         logger.info(f'Зарегистрирован новый пользователь: {first_name} {last_name}')
         return user
     logger.error(f'Произошла ошибка при регистрации пользователя: {register.json()}')
+    return False
