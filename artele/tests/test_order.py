@@ -155,3 +155,77 @@ class TestOrderAPI:
             'Проверьте, что DELETE-запрос администратора к '
             '`/api/order/{order_id}/` не удаляет объект из базы.'
         )
+
+    def test_04_order_filtering(self, client):
+        order = create_single_order(client)
+        response = client.get('/api/order/filter_by_food/')
+        assert response.status_code != HTTPStatus.NOT_FOUND, (
+            'Эндпоинт `/api/order/filter_by_food/` не найден.'
+        )
+        assert response.status_code == HTTPStatus.OK, (
+            'Проверьте, что GET-запрос неавторизованного пользователя к '
+            '`/api/order/filter_by_food/` возвращает ответ со статусом 200.'
+        )
+        data = response.json()
+        assert isinstance(data, list), (
+            'Проверьте, что GET-запрос к `/api/order/filter_by_food/` '
+            'возращает список продуктов'
+        )
+        client.patch(f'/api/order/{order["id"]}/',
+                     data={
+                         'status': "D"
+                     },
+                     content_type='application/json')
+        response = client.get('/api/order/filter_by_food/')
+        data = response.json()
+        assert len(data) == 0, (
+            'Проверьте, что GET-запрос к `/api/order/filter_by_food/` '
+            'вовзращает только заказы со статусом IP'
+        )
+
+    def test_05_order_download(self, client):
+        order = create_single_order(client)
+        response = client.get('/api/order/download/')
+        assert response.status_code != HTTPStatus.NOT_FOUND, (
+            'Эндпоинт `/api/order/download/` не найден.'
+        )
+        assert response.status_code == HTTPStatus.OK, (
+            'Проверьте, что GET-запрос неавторизованного пользователя к '
+            '`/api/order/download/` возвращает ответ со статусом 200.'
+        )
+        data = response.json()
+        assert isinstance(data, dict), (
+            'Проверьте, что GET-запрос к `/api/order/download/` '
+            'возращает словарь'
+        )
+        assert data.get('filtered_by_food') is not None, (
+            'Поле `filtered_by_food` отсутствует'
+        )
+        assert data.get('filtered_by_user') is not None, (
+            'Поле `filtered_by_user` отсутствует'
+        )
+        assert data['filtered_by_food'] is not None, (
+            'Поле `filtered_by_food` пустое'
+        )
+        assert data['filtered_by_user'] is not None, (
+            'Поле `filtered_by_user` пустое'
+        )
+        assert os.path.isfile('media/order.pdf'), (
+            'После GET-запроса к `/media/order.pdf` '
+            'должен создаваться order.pdf'
+        )
+        client.patch(f'/api/order/{order["id"]}/',
+                     data={
+                         'status': "D"
+                     },
+                     content_type='application/json')
+        response = client.get('/api/order/download/')
+        data = response.json()
+        assert len(data['filtered_by_food']) == 0, (
+            'Проверьте, что GET-запрос к `/api/order/download/` '
+            'вовзращает только заказы со статусом IP'
+        )
+        assert len(data['filtered_by_user']) == 0, (
+            'Проверьте, что GET-запрос к `/api/order/download/` '
+            'вовзращает только заказы со статусом IP'
+        )

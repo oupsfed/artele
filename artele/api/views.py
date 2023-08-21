@@ -1,4 +1,3 @@
-import os
 from http import HTTPStatus
 
 from django.db.models import F, Sum
@@ -140,9 +139,6 @@ class OrderViewSet(mixins.ListModelMixin,
         )
         pdf = FPDF()
         pdf.add_page()
-        font = os.path.isfile('./static/font/DejaVuSansCondensed.ttf')
-        if not font:
-            raise FileExistsError('Шрифт не найден')
         pdf.add_font('DejaVu', '', './static/font/DejaVuSansCondensed.ttf', uni=True)
         pdf.set_font('DejaVu', '', 18)
         pdf.cell(200, 10, txt="Список заказов", ln=1, align="C")

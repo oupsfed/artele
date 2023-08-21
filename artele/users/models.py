@@ -25,4 +25,4 @@ class User(AbstractUser):
     REQUIRED_FIELDS = ['username']
 
     def __str__(self):
-        return f'{self.telegram_chat_id}'
+        return self.name

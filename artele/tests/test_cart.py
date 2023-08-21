@@ -61,6 +61,13 @@ class TestCartAPI:
         )
         cart_count += 1
 
+        response = client.post(url, data=post_data_1)
+        data = response.json()
+        assert data['amount'] == 2, (
+            'POST-запрос к `существующему объекту cart '
+            'должен увеличивать amount'
+        )
+
         post_data_2 = {
             'user': users[1]['telegram_chat_id'],
             'food': foods[1]['id'],
