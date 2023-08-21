@@ -2,7 +2,6 @@ from http import HTTPStatus
 from typing import Optional
 
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-
 from logger import logger
 from service.message import send_message_to_user
 from utils import Action, ArteleCallbackData, get_api_answer, patch_api_answer

@@ -2,7 +2,6 @@ from http import HTTPStatus
 from typing import Optional
 
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-
 from logger import logger
 from service.order import OrderCallbackFactory, order_action
 from utils import (Action, ArteleCallbackData, delete_api_answer,

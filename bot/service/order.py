@@ -2,7 +2,6 @@ from http import HTTPStatus
 from typing import Optional
 
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-
 from logger import logger
 from middlewares.role import is_guest
 from service.message import send_message_to_admin

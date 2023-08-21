@@ -2,7 +2,6 @@ from typing import Optional
 
 from aiogram.types import URLInputFile
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-
 from utils import URL, Action, ArteleCallbackData, get_api_answer
 
 orders_list_actions = Action('ord_list')

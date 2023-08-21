@@ -7,9 +7,8 @@ import requests
 from aiogram import Bot
 from aiogram.filters.callback_data import CallbackData
 from dotenv import load_dotenv
-from requests import Response
-
 from logger import logger
+from requests import Response
 
 load_dotenv()
 
