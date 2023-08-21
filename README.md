@@ -1,3 +1,4 @@
+![artele workflow](https://github.com/oupsfed/artele/actions/workflows/main.yml/badge.svg)
 # **1. О чем проект:**
 
 Проект Artele — это телеграмм-бот созданный для продажи
