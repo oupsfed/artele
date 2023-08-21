@@ -2,12 +2,12 @@ from http import HTTPStatus
 from typing import Optional
 
 from aiogram.utils.keyboard import InlineKeyboardBuilder
+
+from logger import logger
 from middlewares.role import is_guest
 from service.message import send_message_to_admin
-from utils import Action, ArteleCallbackData, get_api_answer, post_api_answer
-
-from bot.logger import logger
-from bot.utils import patch_api_answer
+from utils import (Action, ArteleCallbackData, get_api_answer,
+                   patch_api_answer, post_api_answer)
 
 order_action = Action('order')
 

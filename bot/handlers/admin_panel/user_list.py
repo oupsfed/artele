@@ -4,6 +4,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import Message
 from aiogram.utils.keyboard import InlineKeyboardBuilder
+
 from middlewares.role import IsAdminMessageMiddleware
 from service.message import send_message_to_user
 from service.user_list import (UserListCallbackFactory, user_block,

@@ -2,9 +2,10 @@ import base64
 
 from django.core.files.base import ContentFile
 from django.db.models import F
-from food.models import Cart, Food, FoodOrder, Order
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
+
+from food.models import Cart, Food, FoodOrder, Order
 from users.models import User
 
 

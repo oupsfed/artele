@@ -1,8 +1,9 @@
 from aiogram import Router, types
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.filters import Text
-from logger import logger
 from magic_filter import F
+
+from logger import logger
 from service.cart import add_to_cart, cart_action, remove_from_cart
 from service.food import (FoodCallbackFactory, food_action, food_builder,
                           food_info, menu_builder)

@@ -5,7 +5,6 @@ from dotenv import load_dotenv
 
 from tests.utils import (check_pagination, create_carts, create_foods,
                          create_single_order, create_users)
-
 from users.models import User
 
 pytestmark = pytest.mark.django_db

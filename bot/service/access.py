@@ -2,11 +2,14 @@ from http import HTTPStatus
 from typing import Optional
 
 from aiogram.utils.keyboard import InlineKeyboardBuilder
+
 from logger import logger
 from service.message import send_message_to_user
 from utils import Action, ArteleCallbackData, get_api_answer, patch_api_answer
 
 access_action = Action('access')
+access_action.stop = 'stop'
+access_action.request_remove = 'req_remove'
 
 
 class AccessCallbackFactory(ArteleCallbackData, prefix='access'):
@@ -119,3 +122,13 @@ async def access_remove(user_id: int):
         text = f'Произошла ошибка при отклонении заявки {answer.json()}'
         logger.error(text)
     return text
+
+
+async def access_request_builder():
+    builder = InlineKeyboardBuilder()
+    builder.button(
+        text='Отмена',
+        callback_data=AccessCallbackFactory(
+            action=access_action.stop)
+    )
+    return builder
