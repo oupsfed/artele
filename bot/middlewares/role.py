@@ -2,7 +2,6 @@ from typing import Any, Awaitable, Callable, Dict
 
 from aiogram import BaseMiddleware
 from aiogram.types import CallbackQuery, Message
-
 from utils import get_api_answer
 
 
@@ -47,7 +46,7 @@ class IsAdminMessageMiddleware(BaseMiddleware):
             "Доступ только для администратора",
             show_alert=True
         )
-        return
+        return False
 
 
 class IsAdminCallbackMiddleware(BaseMiddleware):
@@ -63,7 +62,7 @@ class IsAdminCallbackMiddleware(BaseMiddleware):
             "Доступ только для администратора",
             show_alert=True
         )
-        return
+        return False
 
 
 class IsGuestMessageMiddleware(BaseMiddleware):
@@ -79,7 +78,7 @@ class IsGuestMessageMiddleware(BaseMiddleware):
             "Доступ только для гостей",
             show_alert=True
         )
-        return
+        return False
 
 
 class IsGuestCallbackMiddleware(BaseMiddleware):
@@ -95,4 +94,4 @@ class IsGuestCallbackMiddleware(BaseMiddleware):
             "Доступ только для гостей",
             show_alert=True
         )
-        return
+        return False

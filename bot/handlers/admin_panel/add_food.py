@@ -2,11 +2,10 @@ from aiogram import Bot, F, Router, types
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import Message
-
 from middlewares.role import IsAdminMessageMiddleware
 from service.food import (FoodCallbackFactory, add_food_builder,
-                          download_and_encode_image, food_action,
-                          food_builder, food_info)
+                          download_and_encode_image, food_action, food_builder,
+                          food_info)
 from utils import post_api_answer
 
 MAIN_MESSAGE = 'Меню'
