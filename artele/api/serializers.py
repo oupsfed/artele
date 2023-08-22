@@ -24,23 +24,36 @@ class Base64ImageField(serializers.ImageField):
 
 
 class UserSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор пользователей с дополнительными строками
+
+    phone_number: int - номер телефона указанный при подаче заявки
+    telegram_chat_id: int -  chat_id пользователя в телеграмм
+    role: [Guest, User, Admin] - статус пользователя
+    """
     class Meta:
         model = User
         fields = (
-            'id',
-            'name',
+            'telegram_chat_id',
             'phone_number',
             'request_for_access',
             'username',
             'first_name',
             'last_name',
-            'telegram_chat_id',
-            'is_staff',
             'role'
         )
 
 
 class FoodSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор товаров
+
+    name: str - название товара
+    image: str(base64) - изображение в формате base64
+    description: str -  описание товара
+    weight: int - вес в граммах
+    price: int - цена товара
+    """
     image = Base64ImageField(required=False, allow_null=True)
 
     class Meta:
@@ -56,6 +69,13 @@ class FoodSerializer(serializers.ModelSerializer):
 
 
 class CartSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор корзины
+
+    user: User - владелец корзины
+    food: Food - товар в корзине
+    amount: int -  количество единиц товара в корзине
+    """
     user = UserSerializer()
     food = FoodSerializer()
 
@@ -71,6 +91,12 @@ class CartSerializer(serializers.ModelSerializer):
 
 
 class CartCreateSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор создания корзины
+
+    user: int - telegram_chat_id пользователя
+    food: int - id товара
+    """
     user = serializers.IntegerField()
     food = serializers.IntegerField()
 
@@ -110,6 +136,14 @@ class CartCreateSerializer(serializers.ModelSerializer):
 
 
 class OrderSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор заказов
+
+    user: User - владелец заказа
+    food: list[Food] - список товаров в заказе
+    status: [in progress, done, cancelled] -  статус заказа
+    total_price: int - общая цена заказа
+    """
     user = UserSerializer()
     food = serializers.SerializerMethodField()
     total_price = serializers.SerializerMethodField()
@@ -152,6 +186,12 @@ class OrderSerializer(serializers.ModelSerializer):
 
 
 class OrderCreateSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор создания заказа
+
+    user: int - telegram_chat_id пользователя
+    status: [in progress, done, cancelled] -  статус заказа
+    """
     user = serializers.IntegerField()
 
     class Meta:
@@ -195,20 +235,3 @@ class OrderCreateSerializer(serializers.ModelSerializer):
         instance.status = validated_data.get('status', instance.status)
         instance.save()
         return instance
-
-
-class OrderUpdateSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Order
-        fields = (
-            'id',
-            'user',
-            'food',
-            'status',
-        )
-        read_only_fields = (
-            'id',
-            'user',
-            'food'
-        )

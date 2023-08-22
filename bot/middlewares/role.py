@@ -16,7 +16,7 @@ def is_admin(user_id) -> bool:
                     answer (bool): Возвращает True, False
     """
     answer = get_api_answer(f'users/{user_id}')
-    return answer.json()['role'] == 'ADMIN'
+    return answer.json()['role'] == 'admin'
 
 
 def is_guest(user_id) -> bool:
@@ -30,7 +30,7 @@ def is_guest(user_id) -> bool:
                     answer (bool): Возвращает True, False
     """
     answer = get_api_answer(f'users/{user_id}')
-    return answer.json()['role'] == 'GUEST'
+    return answer.json()['role'] == 'guest'
 
 
 class IsAdminMessageMiddleware(BaseMiddleware):

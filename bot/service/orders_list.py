@@ -33,7 +33,9 @@ async def order_list_by_user():
     order_count = len(answer)
     text = f'На данный момент оформлено {order_count} заказов:\n'
     for order in answer:
-        text += f'<b>{order["user"]["name"]}</b>:\n'
+        username = (f"{order['user']['first_name']} "
+                    f"{order['user']['last_name']}")
+        text += f'<b>{username}</b>:\n'
         for food_pos in order["food"]:
             text += (f'{food_pos["name"]} - <b>{food_pos["amount"]} шт. '
                      f'({food_pos["total_weight"]} г.)</b>\n')
@@ -76,8 +78,10 @@ async def order_update_builder():
                             }).json()
     builder = InlineKeyboardBuilder()
     for order in answer:
+        username = (f"{order['user']['first_name']} "
+                    f"{order['user']['last_name']}")
         builder.button(
-            text=order['user']['name'],
+            text=username,
             callback_data=OrderListCallbackFactory(
                 action=orders_list_actions.get,
                 order_id=order['id']
@@ -95,7 +99,9 @@ async def order_update_builder():
 
 async def order_user_info(order_id: int):
     answer = get_api_answer(f'order/{order_id}/').json()
-    text = f'Заказ пользователя {answer["user"]["name"]}:\n'
+    username = (f"{answer['user']['first_name']} "
+                f"{answer['user']['last_name']}")
+    text = f'Заказ пользователя {username}:\n'
     for food in answer['food']:
         text += (f'{food["name"]} - <b>{food["amount"]} шт. '
                  f'({food["total_weight"]} г.)</b>\n')

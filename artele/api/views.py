@@ -18,37 +18,59 @@ from .serializers import (CartCreateSerializer, FoodSerializer,
 
 
 class UserViewSet(viewsets.ModelViewSet):
+    """
+    Вьюсет Пользователя с дополнительными URL:
+
+    admin -- список администраторов без пагинации
+    authorize -- список авторизированных пользователей без пагинации.
+    """
     queryset = User.objects.all()
     serializer_class = UserSerializer
     lookup_field = 'telegram_chat_id'
     filter_backends = (DjangoFilterBackend,)
     filterset_fields = ('request_for_access', 'role')
 
+    @action(
+        methods=['GET'],
+        detail=False,
+        url_path='admin',
+    )
+    def admin_list(self, request):
+        self.pagination_class = None
+        queryset = User.objects.filter(role='ADMIN')
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
-class AuthorizedUserViewSet(viewsets.ModelViewSet):
-    queryset = User.objects.filter(role='USER')
-    serializer_class = UserSerializer
-    pagination_class = None
-    lookup_field = 'telegram_chat_id'
-    filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ('request_for_access',)
-
-
-class AdminUserViewSet(viewsets.ModelViewSet):
-    queryset = User.objects.filter(role='ADMIN')
-    serializer_class = UserSerializer
-    pagination_class = None
-    lookup_field = 'telegram_chat_id'
-    filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ('request_for_access',)
+    @action(
+        methods=['GET'],
+        detail=False,
+        url_path='authorize',
+    )
+    def authorize_list(self, request):
+        self.pagination_class = None
+        queryset = User.objects.filter(role='USER')
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
 
 class FoodViewSet(viewsets.ModelViewSet):
+    """
+    Вьюсет товаров.
+    """
     queryset = Food.objects.all()
     serializer_class = FoodSerializer
 
 
 class CartViewSet(viewsets.ModelViewSet):
+    """
+    Вьюсет корзины товаров.
+    измененные URL:
+    create -- если товар в корзине уже есть то
+    увеличивается поле amount
+    destroy -- если amount больше 1 то уменьшить amount
+    в ином случае удалить объект
+    update -- увеличивает amount на 1
+    """
     queryset = Cart.objects.all()
     serializer_class = CartCreateSerializer
     filter_backends = (DjangoFilterBackend,)
@@ -99,6 +121,14 @@ class OrderViewSet(mixins.ListModelMixin,
                    mixins.CreateModelMixin,
                    mixins.UpdateModelMixin,
                    viewsets.GenericViewSet):
+    """
+    Вьюсет заказов.
+    Разрешенные методы: GET, POST, PATCH
+    дополнительные URL:
+    filter_by_food -- Отфильтровать заказы по общему
+    количеству товаров в них
+    download -- создать pdf файл и вернуть информацию о заказах
+    """
     queryset = Order.objects.all()
     serializer_class = OrderCreateSerializer
     pagination_class = None
@@ -160,7 +190,8 @@ class OrderViewSet(mixins.ListModelMixin,
         pdf.set_font('DejaVu', '', 14)
         for order in order_data:
             i = 0
-            pdf.cell(200, 10, txt=order.user.name, ln=1, align="C")
+            username = f'{order.user.first_name} {order.user.last_name}'
+            pdf.cell(200, 10, txt=username, ln=1, align="C")
             pdf.cell(20, 10, '№ п/п', 1, align="C")
             pdf.cell(120, 10, 'Название', 1, align="C")
             pdf.cell(40, 10, 'Количество', 1, ln=1, align="C")

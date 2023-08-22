@@ -18,7 +18,7 @@ class UserListCallbackFactory(ArteleCallbackData, prefix='user_list'):
 async def user_list_builder(page: int = 1):
     answer = get_api_answer('users/',
                             params={
-                                'role': 'USER'
+                                'role': 'user'
                             }).json()
     user_data = answer['results']
     rows = []
@@ -32,8 +32,10 @@ async def user_list_builder(page: int = 1):
         )
         rows.append(1)
         for user in user_data:
+            username = (f"{user['first_name']} "
+                        f"{user['last_name']}")
             builder.button(
-                text=user['name'],
+                text=username,
                 callback_data=UserListCallbackFactory(
                     action=user_list_actions.get,
                     user_id=user['telegram_chat_id'],
@@ -57,7 +59,8 @@ async def user_list_builder(page: int = 1):
                     page=page + 1)
             )
             page_buttons += 1
-        rows.append(page_buttons)
+        if page_buttons > 0:
+            rows.append(page_buttons)
     builder.adjust(*rows)
     return builder
 
@@ -65,7 +68,9 @@ async def user_list_builder(page: int = 1):
 async def user_list_get_info(user_id: int):
     answer = get_api_answer(f'users/{user_id}')
     user = answer.json()
-    return (f"Имя: {user['name']} \n"
+    username = (f"{user['first_name']} "
+                f"{user['last_name']}")
+    return (f"Имя: {username} \n"
             f"Телефон: {user['phone_number']} \n"
             )
 
@@ -100,7 +105,7 @@ async def user_list_get_builder(user_id: int,
 async def user_block(user_id: int):
     answer = patch_api_answer(f'users/{user_id}/',
                               data={
-                                  'role': 'GUEST',
+                                  'role': 'guest',
                                   'request_for_access': False
                               })
     if answer.status_code == HTTPStatus.OK:

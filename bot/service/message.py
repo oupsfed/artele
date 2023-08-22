@@ -18,7 +18,7 @@ async def send_message_to_user(user_id: int,
     user = await check_user_exist(user_id)
     if not user:
         return 'Пользователь не найден'
-    user_name = user['name']
+    user_name = f'{user["first_name"]} {user["last_name"]}'
     try:
         await bot.send_message(
             chat_id=user_id,
@@ -41,7 +41,7 @@ async def send_message_to_admin(text):
             Returns:
                     text (str): Возвращает строку об успехе или ошибке
     """
-    admin_data = get_api_answer('admin/').json()
+    admin_data = get_api_answer('users/admin/').json()
     for admin in admin_data:
         await send_message_to_user(
             admin['telegram_chat_id'],
