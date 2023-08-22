@@ -110,7 +110,7 @@ class TestOrderAPI:
             'в ответе на GET-запрос неавторизованного пользователя к '
             '`/api/order/{order_id}/`.'
         )
-        assert data.get('status') == 'IP', (
+        assert data.get('status') == 'in_progress', (
             'Поле `status` отсутствует или содержит некорректное значение '
             'в ответе на GET-запрос неавторизованного пользователя к '
             '`/api/order/{order_id}/`.'
@@ -121,7 +121,7 @@ class TestOrderAPI:
             '`/api/order/{order_id}/`.'
         )
         update_data = {
-            'status': 'C'
+            'status': 'cancelled'
         }
         response = client.patch(
             f'/api/order/{order["id"]}/', data=update_data, content_type='application/json'
@@ -172,7 +172,7 @@ class TestOrderAPI:
         )
         client.patch(f'/api/order/{order["id"]}/',
                      data={
-                         'status': "D"
+                         'status': 'done'
                      },
                      content_type='application/json')
         response = client.get('/api/order/filter_by_food/')
@@ -215,7 +215,7 @@ class TestOrderAPI:
         )
         client.patch(f'/api/order/{order["id"]}/',
                      data={
-                         'status': "D"
+                         'status': 'done'
                      },
                      content_type='application/json')
         response = client.get('/api/order/download/')

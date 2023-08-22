@@ -72,11 +72,11 @@ async def order_create(user_id: int):
 
 
 async def order_update(order_id: int,
-                       status: str = 'IP'):
+                       status: str = 'in_progress'):
     status_data = {
-        'IP': 'в работе',
-        'C': 'отменен',
-        'D': 'выполнен'
+        'in_progress': 'в работе',
+        'cancelled': 'отменен',
+        'done': 'выполнен'
     }
     answer = patch_api_answer(f'order/{order_id}/',
                               data={

@@ -73,9 +73,9 @@ DB_PORT=5432
 
 Установить docker и запустить контейнеры командой:
 
-    ```
-    docker-compose up -d
-    ```
+```
+docker-compose up -d
+```
 
 Для ознакомления с работой api перейдите 
 на http://localhost:8000/redoc/

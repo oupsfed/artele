@@ -1,5 +1,6 @@
 from django.core.validators import MinValueValidator
 from django.db import models
+from django.utils.translation import gettext_lazy as _
 from users.models import User
 
 
@@ -47,6 +48,11 @@ class Cart(models.Model):
 
 
 class Order(models.Model):
+    class Status(models.TextChoices):
+        IN_PROGRESS = 'in_progress', _('In Progress')
+        DONE = 'done', _('Done')
+        CANCELLED = 'cancelled', _('Cancelled')
+
     user = models.ForeignKey(User,
                              on_delete=models.CASCADE,
                              related_name='order',
@@ -55,10 +61,8 @@ class Order(models.Model):
                                   through='FoodOrder',
                                   verbose_name='Список товаров')
     status = models.CharField(max_length=256,
-                              choices=[('IP', 'in_progress'),
-                                       ('D', 'done'),
-                                       ('C', 'cancelled')],
-                              default='IP',
+                              choices=Status.choices,
+                              default=Status.IN_PROGRESS,
                               verbose_name='Статус заказа')
 
     class Meta:
@@ -66,7 +70,7 @@ class Order(models.Model):
         verbose_name_plural = 'Заказы'
 
     def __str__(self):
-        return self.user.name
+        return f'{self.user}'
 
 
 class FoodOrder(models.Model):

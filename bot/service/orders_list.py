@@ -28,7 +28,7 @@ async def order_list_by_food():
 async def order_list_by_user():
     answer = get_api_answer('order/',
                             params={
-                                'status': 'IP'
+                                'status': 'in_progress'
                             }).json()
     order_count = len(answer)
     text = f'На данный момент оформлено {order_count} заказов:\n'
@@ -74,7 +74,7 @@ async def order_list_builder(by_user=False):
 async def order_update_builder():
     answer = get_api_answer('order/',
                             params={
-                                'status': 'IP'
+                                'status': 'in_progress'
                             }).json()
     builder = InlineKeyboardBuilder()
     for order in answer:

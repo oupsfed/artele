@@ -203,7 +203,7 @@ class OrderCreateSerializer(serializers.ModelSerializer):
 
     def validate_user(self, value):
         is_order_exist = Order.objects.filter(user__telegram_chat_id=value,
-                                              status='IP').exists()
+                                              status='in_progress').exists()
         if is_order_exist:
             raise ValidationError(
                 'Заказ уже существует')
@@ -219,8 +219,7 @@ class OrderCreateSerializer(serializers.ModelSerializer):
         user = User.objects.get(telegram_chat_id=user_id)
         cart_list = Cart.objects.filter(user=user)
         order = Order.objects.create(
-            user=user,
-            status='IP'
+            user=user
         )
         for cart in cart_list:
             FoodOrder.objects.create(

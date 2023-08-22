@@ -141,7 +141,7 @@ class OrderViewSet(mixins.ListModelMixin,
         url_path='filter_by_food',
     )
     def filter_by_food(self, request):
-        order_data = Order.objects.filter(status='IP')
+        order_data = Order.objects.filter(status='in_progress')
         order_data = order_data.values(
             food_id=F('food__id'),
             food_name=F('food__name'),
@@ -160,7 +160,7 @@ class OrderViewSet(mixins.ListModelMixin,
         url_path='download',
     )
     def download(self, request):
-        order_data = Order.objects.filter(status='IP')
+        order_data = Order.objects.filter(status='in_progress')
         filtered_by_food_data = order_data.values(
             food_id=F('food__id'),
             food_name=F('food__name'),
