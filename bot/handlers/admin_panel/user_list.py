@@ -121,7 +121,7 @@ async def callbacks_send_message_all(
         message: Message,
         state: FSMContext,
         bot: Bot):
-    answer = get_api_answer('authorized/').json()
+    answer = get_api_answer('users/authorize/').json()
     success = []
     for user in answer:
         text = await send_message_to_user(user['telegram_chat_id'],

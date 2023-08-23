@@ -89,8 +89,8 @@ async def callbacks_show_food(
         callback: types.CallbackQuery,
         callback_data: OrderListCallbackFactory
 ):
-    text, answer = await order_update(order_id=callback_data.order_id,
-                                      status='D')
+    answer, text = await order_update(order_id=callback_data.order_id,
+                                      status='done')
     await callback.message.answer(
         text
     )
@@ -102,8 +102,8 @@ async def callbacks_show_food(
         callback: types.CallbackQuery,
         callback_data: OrderListCallbackFactory
 ):
-    text, answer = await order_update(order_id=callback_data.order_id,
-                                      status='C')
+    answer, text = await order_update(order_id=callback_data.order_id,
+                                      status='cancelled')
     await callback.message.answer(
         text
     )

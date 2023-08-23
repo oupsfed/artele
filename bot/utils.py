@@ -12,7 +12,7 @@ from requests import Response
 
 load_dotenv()
 
-DEBUG = False
+DEBUG = os.getenv('DEBUG', default='False')
 
 
 URL = os.getenv('URL')

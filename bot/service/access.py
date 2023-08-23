@@ -25,7 +25,7 @@ async def access_list_builder(page: int = 1):
     rows = []
     for user in requests_data:
         builder.button(
-            text=user['name'],
+            text=f'{user["first_name"]} {user["last_name"]}',
             callback_data=AccessCallbackFactory(
                 action=access_action.get,
                 user_id=user['telegram_chat_id'],
@@ -58,7 +58,7 @@ async def access_list_builder(page: int = 1):
 async def access_get_info(user_id: int):
     answer = get_api_answer(f'users/{user_id}')
     user = answer.json()
-    return (f"Имя: {user['name']} \n"
+    return (f"Имя: {user['first_name']} {user['last_name']} \n"
             f"Телефон: {user['phone_number']} \n"
             )
 
@@ -93,7 +93,7 @@ async def access_get_builder(user_id: int,
 async def access_create(user_id: int):
     answer = patch_api_answer(f'users/{user_id}/',
                               data={
-                                  'role': 'USER',
+                                  'role': 'user',
                                   'request_for_access': False
                               })
     if answer.status_code == HTTPStatus.OK:
