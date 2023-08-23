@@ -67,7 +67,7 @@ async def callbacks_edit_food_confirm(
     data = await state.get_data()
     food_id = data['id']
     if data['col'] == 'image':
-        data['name'] = await download_and_encode_image(message.photo[-2])
+        data['name'] = await download_and_encode_image(message.photo[-1])
 
     else:
         await state.update_data(name=message.text)

@@ -97,7 +97,7 @@ async def callbacks_add_food_confirm(
         message: Message,
         state: FSMContext,
         bot: Bot):
-    image_string = await download_and_encode_image(message.photo[-2])
+    image_string = await download_and_encode_image(message.photo[-1])
     await state.update_data(image=image_string)
     data = await state.get_data()
     answer = post_api_answer('food/',
