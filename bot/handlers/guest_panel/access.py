@@ -12,7 +12,7 @@ from service.access import (AccessCallbackFactory, access_action,
                             access_request_builder)
 from service.message import send_message_to_admin
 from utils import get_api_answer, patch_api_answer
-from validators import check_phone_number
+from validators import check_full_name, check_phone_number
 
 router = Router()
 router.message.middleware(IsGuestMessageMiddleware())
@@ -42,7 +42,7 @@ async def access(
         )
     else:
         text = ('Ваша заявка на рассмотрении \n'
-                f'Имя: {data["name"]} \n'
+                f'Имя: {data["fullname"]} \n'
                 f'Телефон: {data["phone_number"]}')
         builder.button(
             text='Отменить заявку',
@@ -61,10 +61,24 @@ async def callbacks_request_name(
         state: FSMContext,
         bot: Bot):
     builder = await access_request_builder()
-    await state.update_data(name=message.text)
+    fullname = message.text
+
+    if not check_full_name(fullname):
+        text = ('Введите имя и фамилию в правильно формате \n'
+                'Пример: Иван Иванов')
+        await message.answer(
+            text,
+            reply_markup=builder.as_markup()
+        )
+        await state.set_state(Access.name)
+        return
+    text = ("А так же требуется ваш номер телефона \n"
+            "Пример: +79781234567")
+    fullname = fullname.split(' ')
+    await state.update_data(first_name=fullname[0],
+                            last_name=fullname[1])
     await message.answer(
-        "А так же требуется ваш номер телефона \n"
-        "Пример: +79781234567",
+        text,
         reply_markup=builder.as_markup()
     )
     await state.set_state(Access.phone)
@@ -90,7 +104,8 @@ async def callbacks_request_phone(
     await state.clear()
     patch_api_answer(f'users/{message.from_user.id}/',
                      data={
-                         'name': data['name'],
+                         'first_name': data['first_name'],
+                         'last_name': data['last_name'],
                          'phone_number': data['phone'],
                          'request_for_access': True
                      })
@@ -98,7 +113,7 @@ async def callbacks_request_phone(
         'Ваша заявка отправлена!'
     )
     await send_message_to_admin(
-        f'Появилась новая заявка от пользователя {data["name"]}')
+        f'Появилась новая заявка от пользователя {data["fullname"]}')
 
 
 @router.callback_query(
@@ -130,7 +145,7 @@ async def callbacks_request_remove(
                                 })
     data = response.json()
     if response.status_code == HTTPStatus.OK:
-        logger.info(f'{data["name"]} отменил заявку на доступ')
+        logger.info(f'{data["fullname"]} отменил заявку на доступ')
     else:
         logger.error('Произошла обишка при отмене заявки \n'
                      f'{data}')

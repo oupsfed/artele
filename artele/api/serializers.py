@@ -27,10 +27,13 @@ class UserSerializer(serializers.ModelSerializer):
     """
     Сериализатор пользователей с дополнительными строками
 
+    fullname: str - полное имя пользователя
     phone_number: int - номер телефона указанный при подаче заявки
     telegram_chat_id: int -  chat_id пользователя в телеграмм
     role: [Guest, User, Admin] - статус пользователя
     """
+    fullname = serializers.SerializerMethodField()
+
     class Meta:
         model = User
         fields = (
@@ -40,8 +43,12 @@ class UserSerializer(serializers.ModelSerializer):
             'username',
             'first_name',
             'last_name',
+            'fullname',
             'role'
         )
+
+    def get_fullname(self, obj):
+        return f'{obj.first_name} {obj.last_name}'
 
 
 class FoodSerializer(serializers.ModelSerializer):
@@ -204,6 +211,11 @@ class OrderCreateSerializer(serializers.ModelSerializer):
     def validate_user(self, value):
         is_order_exist = Order.objects.filter(user__telegram_chat_id=value,
                                               status='in_progress').exists()
+        user = User.objects.get(telegram_chat_id=value)
+        if user.role == 'guest':
+            raise ValidationError(
+                'Гость не может оформлять заказы'
+            )
         if is_order_exist:
             raise ValidationError(
                 'Заказ уже существует')

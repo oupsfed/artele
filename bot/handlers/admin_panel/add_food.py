@@ -114,3 +114,4 @@ async def callbacks_add_food_confirm(
         caption=food_data['text'],
         reply_markup=builder.as_markup()
     )
+    await state.clear()

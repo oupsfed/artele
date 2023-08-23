@@ -18,7 +18,7 @@ class OrderCallbackFactory(ArteleCallbackData, prefix='order'):
 async def order_info(user_id: int):
     answer = get_api_answer(
         'order/',
-        params={'status': 'IP',
+        params={'status': 'in_progress',
                 'user': user_id}
     )
     order = answer.json()
@@ -50,25 +50,25 @@ async def order_builder(order_id: int):
 
 async def order_create(user_id: int):
     if is_guest(user_id):
-        answer = (
+        return (
             'Недостаточно прав для оформления заказа \n'
             'Подайте заявку на доступ к заказам'
         )
-    else:
-        data = {
-            'user': user_id
-        }
-        answer = post_api_answer('order/',
-                                 data=data)
-        if answer.status_code == HTTPStatus.CREATED:
-            await send_message_to_admin(
-                'Добавлен новый заказ'
-            )
-            logger.info(f'{user_id}: добавил новый заказ')
-        else:
-            logger.error('Произошла ошибка при создании заказа \n'
-                         f'{answer.json()}')
-    return answer
+    data = {
+        'user': user_id
+    }
+    answer = post_api_answer('order/',
+                             data=data)
+    if answer.status_code == HTTPStatus.CREATED:
+        await send_message_to_admin(
+            'Добавлен новый заказ'
+        )
+
+        logger.info(f'{user_id}: добавил новый заказ')
+        return 'Ваш заказ оформлен'
+    logger.error('Произошла ошибка при создании заказа \n'
+                 f'{answer.json()}')
+    return 'Произошла ошибка при создании заказа'
 
 
 async def order_update(order_id: int,

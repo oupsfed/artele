@@ -51,6 +51,7 @@ def create_users(client):
         'first_name': 'Олег',
         'last_name': 'Работяга',
         'username': 'oleg',
+        'role': 'user'
     }
     result.append(data)
     response = client.post(url, data=data)

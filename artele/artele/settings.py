@@ -7,11 +7,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = get_random_secret_key()
 
-DEBUG = os.getenv('DEBUG', default='False')
+DEBUG = False
 
 ALLOWED_HOSTS = [
     'localhost',
-    'web:8000',
+    'web',
     '127.0.0.1',
     '[::1]',
     'testserver',

@@ -103,8 +103,8 @@ async def food_builder(user_id: int,
     cart = get_api_answer(
         'cart/',
         params={
-            'user__telegram_chat_id': user_id,
-            'food__id': food_id
+            'user': user_id,
+            'food': food_id
         }).json()
     cart = cart['results']
     amount = 0

@@ -19,9 +19,13 @@ class User(AbstractUser):
                                 null=True,
                                 verbose_name='Псевдоним')
     first_name = models.CharField(max_length=100,
+                                  blank=True,
+                                  null=True,
                                   default='Неизвестный',
                                   verbose_name='Имя')
     last_name = models.CharField(max_length=100,
+                                 blank=True,
+                                 null=True,
                                  default='Пользователь',
                                  verbose_name='Фамилия')
     telegram_chat_id = models.IntegerField(unique=True,
