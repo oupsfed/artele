@@ -8,7 +8,9 @@ services:
     env_file:
       - ./.env
   web:
-    image: oupsfed/artele_api:latest
+    build:
+      context: artele
+      dockerfile: Dockerfile
     restart: always
     volumes:
       - static_value:/app/static/
@@ -36,7 +38,9 @@ services:
     depends_on:
       - web
   bot:
-    image: oupsfed/artele_bot:latest
+    build:
+      context: bot
+      dockerfile: Dockerfile
     restart: always
     depends_on:
       - nginx

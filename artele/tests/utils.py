@@ -47,7 +47,7 @@ def create_users(client):
     url = '/api/users/'
     result = []
     data = {
-        'telegram_chat_id': 1,
+        'telegram_chat_id': 6026515762,
         'first_name': 'Олег',
         'last_name': 'Работяга',
         'username': 'oleg',
@@ -60,7 +60,7 @@ def create_users(client):
         'корректные данные - должен вернуться ответ со статусом 201.'
     )
     data = {
-        'telegram_chat_id': 2,
+        'telegram_chat_id': 6026515763,
     }
     result.append(data)
     response = client.post(url, data=data)
@@ -69,7 +69,7 @@ def create_users(client):
         'корректные данные - должен вернуться ответ со статусом 201.'
     )
     data = {
-        'telegram_chat_id': 3,
+        'telegram_chat_id': 6026515764,
     }
     result.append(data)
     client.post(url, data=data)
