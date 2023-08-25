@@ -37,7 +37,7 @@ class UserViewSet(viewsets.ModelViewSet):
     )
     def admin_list(self, request):
         self.pagination_class = None
-        queryset = User.objects.filter(role='ADMIN')
+        queryset = User.objects.filter(role='admin')
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
@@ -48,7 +48,7 @@ class UserViewSet(viewsets.ModelViewSet):
     )
     def authorize_list(self, request):
         self.pagination_class = None
-        queryset = User.objects.filter(role='USER')
+        queryset = User.objects.filter(role='user')
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 

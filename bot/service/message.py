@@ -18,16 +18,15 @@ async def send_message_to_user(user_id: int,
     user = await check_user_exist(user_id)
     if not user:
         return 'Пользователь не найден'
-    user_name = f'{user["first_name"]} {user["last_name"]}'
     try:
         await bot.send_message(
             chat_id=user_id,
             text=text
         )
-        text = f'Сообщение успешно отправлено пользователю {user_name}'
+        text = f'Сообщение успешно отправлено пользователю {user["fullname"]}'
         logger.debug(text)
     except TelegramBadRequest:
-        text = f'Сообщение не отправлено! пользователь {user_name} не найден'
+        text = f'Сообщение не отправлено! пользователь {user["fullname"]} не найден'
         logger.error(text)
     return text
 

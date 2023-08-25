@@ -118,7 +118,7 @@ class TestCartAPI:
             'поля `request_for_access` должено быть `False`.'
         )
 
-        assert user.get('role') == 'guest', (
+        assert user.get('role') == 'user', (
             'Проверьте, что при GET-запросе неавторизованного '
             f'пользователя к `{url}` возвращается информация о правах '
             'пользователя. Если прав нет - значением '

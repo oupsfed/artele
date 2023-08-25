@@ -26,7 +26,7 @@ async def callbacks_show_cart(
     answer = await order_create(callback.from_user.id)
     await callback.message.delete()
     await callback.message.answer(
-        answer.json()
+        answer
     )
 
 
@@ -36,7 +36,7 @@ async def callbacks_order_cancel(
         callback_data: OrderCallbackFactory
 ):
     answer, text = await order_update(callback_data.order_id,
-                                      status='C')
+                                      status='cancelled')
     await callback.message.delete()
     await callback.message.answer(
         text

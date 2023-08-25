@@ -1,3 +1,4 @@
+import re
 from http import HTTPStatus
 from typing import Union
 
@@ -56,3 +57,9 @@ def check_phone_number(number: str) -> Union[bool, int]:
     if number.isdigit():
         return number
     return False
+
+
+def check_full_name(fullname: str):
+    if not re.search('[А-Яа-я]{1,16} [А-Яа-я]{1,16}', fullname):
+        return False
+    return True

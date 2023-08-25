@@ -32,10 +32,8 @@ async def user_list_builder(page: int = 1):
         )
         rows.append(1)
         for user in user_data:
-            username = (f"{user['first_name']} "
-                        f"{user['last_name']}")
             builder.button(
-                text=username,
+                text=user['fullname'],
                 callback_data=UserListCallbackFactory(
                     action=user_list_actions.get,
                     user_id=user['telegram_chat_id'],
@@ -68,9 +66,7 @@ async def user_list_builder(page: int = 1):
 async def user_list_get_info(user_id: int):
     answer = get_api_answer(f'users/{user_id}')
     user = answer.json()
-    username = (f"{user['first_name']} "
-                f"{user['last_name']}")
-    return (f"Имя: {username} \n"
+    return (f"Имя: {user['fullname']} \n"
             f"Телефон: {user['phone_number']} \n"
             )
 

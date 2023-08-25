@@ -8,7 +8,7 @@ services:
     env_file:
       - .env
   web:
-    image: oupsfed/artele_api:latest
+    build: ./artele/
     restart: always
     volumes:
       - static_value:/app/static/
@@ -36,7 +36,7 @@ services:
     depends_on:
       - web
   bot:
-    image: oupsfed/artele_bot:latest
+    build: ./bot/
     restart: always
     depends_on:
       - nginx

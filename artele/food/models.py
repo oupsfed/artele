@@ -44,7 +44,7 @@ class Cart(models.Model):
         verbose_name_plural = 'Корзины'
 
     def __str__(self):
-        return self.user.name
+        return f'{self.user}'
 
 
 class Order(models.Model):
