@@ -6,6 +6,6 @@ COPY . /app
 
 WORKDIR /app
 
-RUN pip3 intall -r requirements.txt --no-cache-dir
+RUN pip3 install -r requirements.txt --no-cache-dir
 
 CMD ["python", "main.py"]
