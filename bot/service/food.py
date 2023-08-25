@@ -6,7 +6,7 @@ from aiogram.types import PhotoSize, URLInputFile
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from middlewares.role import is_admin
 from service.cart import cart_action
-from utils import Action, ArteleCallbackData, bot, get_api_answer
+from utils import Action, ArteleCallbackData, bot, get_api_answer, paginate_builder
 
 FOOD_COL = {
     'name': 'название',
@@ -29,14 +29,14 @@ class FoodCallbackFactory(ArteleCallbackData, prefix='food'):
     for_staff: Optional[bool] = False
 
 
-async def menu_builder(page: int = 1,
-                       user_id: int = None):
-    answer = get_api_answer('food/',
-                            params={
-                                'page': page
-                            })
-    answer = answer.json()
-    food_list = answer['results']
+async def menu_builder(json_response: dict,
+                       pagination: bool = True,
+                       admin: bool = False):
+    food_list = json_response
+    page = 1
+    if pagination:
+        food_list = json_response['results']
+        page = json_response['page']
     builder = InlineKeyboardBuilder()
     rows = []
     for food in food_list:
@@ -48,28 +48,15 @@ async def menu_builder(page: int = 1,
                 page=page)
         )
         rows.append(1)
-    page_buttons = 0
-    if answer['previous']:
-        builder.button(
-            text="⬅️",
-            callback_data=FoodCallbackFactory(
-                action=food_action.get_all,
-                page=page - 1
-            )
-        )
-        page_buttons += 1
-    if answer['next']:
-        builder.button(
-            text="➡️",
-            callback_data=FoodCallbackFactory(
-                action=food_action.get_all,
-                page=page + 1,
-            )
-        )
-        page_buttons += 1
+    page_buttons, builder = await paginate_builder(
+        json_response,
+        builder,
+        FoodCallbackFactory,
+        food_action.get_all
+    )
     if page_buttons > 0:
         rows.append(page_buttons)
-    if is_admin(user_id=user_id):
+    if admin:
         builder.button(
             text="Добавить товар",
             callback_data=FoodCallbackFactory(

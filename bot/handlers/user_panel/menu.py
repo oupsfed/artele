@@ -6,6 +6,8 @@ from magic_filter import F
 from service.cart import add_to_cart, cart_action, remove_from_cart
 from service.food import (FoodCallbackFactory, food_action, food_builder,
                           food_info, menu_builder)
+from utils import get_api_answer
+from middlewares.role import is_admin
 
 router = Router()
 
@@ -14,8 +16,10 @@ MAIN_MESSAGE = 'Меню:'
 
 @router.message(Text('Меню'))
 async def menu(message: types.Message):
-    builder = await menu_builder(page=1,
-                                 user_id=message.from_user.id)
+    builder = await menu_builder(
+        get_api_answer('food/').json(),
+        admin=is_admin(message.from_user.id)
+    )
     await message.answer(
         MAIN_MESSAGE,
         reply_markup=builder.as_markup()
@@ -47,8 +51,15 @@ async def callbacks_show_page(
         callback: types.CallbackQuery,
         callback_data: FoodCallbackFactory
 ):
-    builder = await menu_builder(page=callback_data.page,
-                                 user_id=callback.from_user.id)
+    # builder = await menu_builder(page=callback_data.page,
+    #                              user_id=callback.from_user.id)
+    builder = await menu_builder(
+        get_api_answer('food/',
+                       params={
+                           'page': callback_data.page
+                       }).json(),
+        admin=is_admin(callback.from_user.id)
+    )
     if callback.message.photo:
         await callback.message.delete()
         await callback.message.answer(

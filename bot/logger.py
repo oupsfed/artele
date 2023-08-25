@@ -1,10 +1,16 @@
 import logging
 from sys import stdout
 
+# logging.basicConfig(
+#     level=logging.ERROR,
+#     filename='main.log',
+#     filemode='w',
+#     format='%(asctime)s, %(levelname)s, %(message)s, %(name)s',
+#     encoding='utf-8'
+# )
 logging.basicConfig(
-    level=logging.ERROR,
-    filename='main.log',
-    filemode='w',
+    level=logging.DEBUG,
+    stream=stdout,
     format='%(asctime)s, %(levelname)s, %(message)s, %(name)s',
     encoding='utf-8'
 )

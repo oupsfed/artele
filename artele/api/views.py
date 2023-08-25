@@ -12,6 +12,7 @@ from rest_framework.response import Response
 from users.models import User
 
 from .filters import CartFilter, OrderFilter
+from .paginator import CustomPagePagination
 from .serializers import (CartCreateSerializer, FoodSerializer,
                           OrderCreateSerializer, OrderSerializer,
                           UserSerializer)
@@ -59,6 +60,7 @@ class FoodViewSet(viewsets.ModelViewSet):
     """
     queryset = Food.objects.all()
     serializer_class = FoodSerializer
+    pagination_class = CustomPagePagination
 
 
 class CartViewSet(viewsets.ModelViewSet):
