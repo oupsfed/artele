@@ -15,6 +15,7 @@ load_dotenv()
 DEBUG = False
 
 
+
 URL = os.getenv('URL')
 
 if DEBUG:

@@ -6,7 +6,7 @@ services:
     volumes:
       - /var/lib/postgresql/data/
     env_file:
-      - ./.env
+      - .env
   web:
     build: ./artele/
     restart: always
@@ -16,7 +16,7 @@ services:
     depends_on:
       - db
     env_file:
-      - ./.env
+      - .env
     command: >
       bash -c "python manage.py migrate && 
       python manage.py collectstatic --no-input && 
@@ -41,7 +41,7 @@ services:
     depends_on:
       - nginx
     env_file:
-      - ./.env
+      - .env
 volumes:
   static_value:
   media_value:
