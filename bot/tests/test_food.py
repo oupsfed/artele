@@ -1,7 +1,8 @@
 import asyncio
 import pytest
+from aiogram.types import URLInputFile
 
-from service.food import menu_builder
+from service.food import menu_builder, food_info_v2
 
 from .utils import check_paginator, FOOD_DATA
 
@@ -52,3 +53,24 @@ async def test_menu_builder():
         'у кнопки администратора "Добавить Товар"'
     )
     check_paginator(builder_data[-2], FOOD_DATA['page'])
+
+
+@pytest.mark.asyncio
+async def test_food_info():
+    food_data = await food_info_v2(FOOD_DATA['results'][0])
+    expected_text = ('<b>test</b> \n'
+                     'test \n'
+                     'Вес: 1 г. \n'
+                     'Цена: 1 ₽')
+    assert 'text' in food_data, (
+        'поле "text" отсутствует'
+    )
+    assert 'image' in food_data, (
+        'поле "image" отсутствует'
+    )
+    assert food_data['text'] == expected_text, (
+        'Текст сообщения не соответствует ожидаемому'
+    )
+    assert isinstance(food_data['image'], URLInputFile), (
+        'Изображение не соответствует ожидаемому'
+    )

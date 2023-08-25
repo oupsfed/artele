@@ -68,6 +68,20 @@ async def menu_builder(json_response: dict,
     return builder
 
 
+async def food_info_v2(food: dict):
+    text = (f"<b>{food['name']}</b> \n"
+            f"{food['description']} \n"
+            f"Вес: {food['weight']} г. \n"
+            f"Цена: {food['price']} ₽")
+    food_image = URLInputFile('https://agentura-soft.ru/images/noImage.png')
+    if food['image']:
+        food_image = URLInputFile(food['image'])
+    return {
+        'text': text,
+        'image': food_image
+    }
+
+
 async def food_info(food_id: int):
     answer = get_api_answer(f'food/{food_id}')
     food = answer.json()
