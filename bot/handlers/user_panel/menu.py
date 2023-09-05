@@ -9,6 +9,7 @@ from service.food import (FoodCallbackFactory, food_action, food_builder,
 from utils import get_api_answer
 from middlewares.role import is_admin
 
+
 router = Router()
 
 MAIN_MESSAGE = 'Меню:'
@@ -31,13 +32,17 @@ async def callbacks_show_food(
         callback: types.CallbackQuery,
         callback_data: FoodCallbackFactory
 ):
-    food_id = callback_data.food_id
-    food_data = await food_info(food_id)
-    builder = await food_builder(
-        callback.from_user.id,
-        food_id,
-        callback_data.page
-    )
+    user_id = callback.from_user.id
+    food = get_api_answer(f'food/{callback_data.food_id}/').json()
+    cart = get_api_answer(f'cart/',
+                          params={
+                              'user': user_id,
+                              'food': food['id']
+                          }).json()
+    food_data = await food_info(food)
+    builder = await food_builder(cart=cart,
+                                 food=food,
+                                 admin=is_admin(user_id))
     await callback.message.answer_photo(
         food_data['image'],
         caption=food_data['text'],

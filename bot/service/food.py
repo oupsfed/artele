@@ -31,7 +31,7 @@ class FoodCallbackFactory(ArteleCallbackData, prefix='food'):
 
 async def menu_builder(json_response: dict,
                        pagination: bool = True,
-                       admin: bool = False):
+                       admin: bool = False) -> InlineKeyboardBuilder:
     food_list = json_response
     page = 1
     if pagination:
@@ -68,7 +68,7 @@ async def menu_builder(json_response: dict,
     return builder
 
 
-async def food_info_v2(food: dict):
+async def food_info(food: dict) -> dict:
     text = (f"<b>{food['name']}</b> \n"
             f"{food['description']} \n"
             f"Вес: {food['weight']} г. \n"
@@ -82,44 +82,22 @@ async def food_info_v2(food: dict):
     }
 
 
-async def food_info(food_id: int):
-    answer = get_api_answer(f'food/{food_id}')
-    food = answer.json()
-    text = (f"<b>{food['name']}</b> \n"
-            f"{food['description']} \n"
-            f"Вес: {food['weight']} г. \n"
-            f"Цена: {food['price']} ₽")
-    food_image = URLInputFile('https://agentura-soft.ru/images/noImage.png')
-    if food['image']:
-        food_image = URLInputFile(food['image'])
-    return {
-        'text': text,
-        'image': food_image
-    }
-
-
-async def food_builder(user_id: int,
-                       food_id: int,
-                       page: int = 1):
-    cart = get_api_answer(
-        'cart/',
-        params={
-            'user': user_id,
-            'food': food_id
-        }).json()
-    cart = cart['results']
+async def food_builder(cart: dict,
+                       food: dict,
+                       page: int = 1,
+                       admin: bool = False):
+    cart = cart['results'][0]
     amount = 0
-    food_price = 0
+    food_price = food['price']
     if cart:
-        amount = cart[0]['amount']
-        food_price = cart[0]['food']['price']
+        amount = cart['amount']
     builder = InlineKeyboardBuilder()
     rows = []
     builder.button(
         text=f'{amount} шт. ({amount * food_price} ₽)',
         callback_data=FoodCallbackFactory(
             action=cart_action.create,
-            food_id=food_id
+            food_id=food['id']
         )
     )
     rows.append(1)
@@ -127,14 +105,14 @@ async def food_builder(user_id: int,
         text='➖',
         callback_data=FoodCallbackFactory(
             action=cart_action.remove,
-            food_id=food_id
+            food_id=food['id']
         )
     )
     builder.button(
         text='➕',
         callback_data=FoodCallbackFactory(
             action=cart_action.create,
-            food_id=food_id
+            food_id=food['id']
         )
     )
     rows.append(2)
@@ -146,12 +124,12 @@ async def food_builder(user_id: int,
         )
     )
     rows.append(1)
-    if is_admin(user_id):
+    if admin:
         builder.button(
             text='Редактировать товар',
             callback_data=FoodCallbackFactory(
                 action=food_action.update_preview,
-                food_id=food_id,
+                food_id=food['id'],
                 page=page
             )
         )
@@ -160,12 +138,82 @@ async def food_builder(user_id: int,
             text='Удалить товар',
             callback_data=FoodCallbackFactory(
                 action=food_action.remove_preview,
-                food_id=food_id,
+                food_id=food['id'],
                 page=page)
         )
         rows.append(1)
     builder.adjust(*rows)
     return builder
+
+
+# async def food_builder(user_id: int,
+#                        food_id: int,
+#                        page: int = 1):
+#     cart = get_api_answer(
+#         'cart/',
+#         params={
+#             'user': user_id,
+#             'food': food_id
+#         }).json()
+#     cart = cart['results']
+#     amount = 0
+#     food_price = 0
+#     if cart:
+#         amount = cart[0]['amount']
+#         food_price = cart[0]['food']['price']
+#     builder = InlineKeyboardBuilder()
+#     rows = []
+#     builder.button(
+#         text=f'{amount} шт. ({amount * food_price} ₽)',
+#         callback_data=FoodCallbackFactory(
+#             action=cart_action.create,
+#             food_id=food_id
+#         )
+#     )
+#     rows.append(1)
+#     builder.button(
+#         text='➖',
+#         callback_data=FoodCallbackFactory(
+#             action=cart_action.remove,
+#             food_id=food_id
+#         )
+#     )
+#     builder.button(
+#         text='➕',
+#         callback_data=FoodCallbackFactory(
+#             action=cart_action.create,
+#             food_id=food_id
+#         )
+#     )
+#     rows.append(2)
+#     builder.button(
+#         text='↩️',
+#         callback_data=FoodCallbackFactory(
+#             action=food_action.get_all,
+#             page=page
+#         )
+#     )
+#     rows.append(1)
+#     if is_admin(user_id):
+#         builder.button(
+#             text='Редактировать товар',
+#             callback_data=FoodCallbackFactory(
+#                 action=food_action.update_preview,
+#                 food_id=food_id,
+#                 page=page
+#             )
+#         )
+#         rows.append(1)
+#         builder.button(
+#             text='Удалить товар',
+#             callback_data=FoodCallbackFactory(
+#                 action=food_action.remove_preview,
+#                 food_id=food_id,
+#                 page=page)
+#         )
+#         rows.append(1)
+#     builder.adjust(*rows)
+#     return builder
 
 
 async def admin_edit_food_builder(food_id: int,

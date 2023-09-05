@@ -7,6 +7,7 @@ from typing import Optional
 import requests
 from aiogram import Bot
 from aiogram.filters.callback_data import CallbackData
+from aiogram.types import InlineKeyboardButton
 from dotenv import load_dotenv
 from logger import logger
 from requests import Response
@@ -50,6 +51,7 @@ class Action:
 class ArteleCallbackData(CallbackData, prefix='artele'):
     action: str
     page: Optional[int] = 1
+    back_data: Optional[CallbackData]
 
 
 def get_api_answer(endpoint: str,

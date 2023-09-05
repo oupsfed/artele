@@ -104,7 +104,7 @@ async def callbacks_add_food_confirm(
                              data=data)
     food = answer.json()
     food_id = food['id']
-    food_data = await food_info(food_id)
+    food_data = await food_info(food)
     builder = await food_builder(
         message.from_user.id,
         food_id
