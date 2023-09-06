@@ -33,7 +33,7 @@ async def callbacks_show_food(
         callback_data: FoodCallbackFactory
 ):
     user_id = callback.from_user.id
-    food = get_api_answer(f'food/{callback_data.food_id}/').json()
+    food = get_api_answer(f'food/{callback_data.id}/').json()
     cart = get_api_answer(f'cart/',
                           params={
                               'user': user_id,
@@ -84,14 +84,14 @@ async def callbacks_add_to_cart(
         callback_data: FoodCallbackFactory
 ):
     user_id = callback.from_user.id
-    food_id = callback_data.food_id
+    food_id = callback_data.id
     await add_to_cart(
         user_id=user_id,
-        food_id=food_id
+        id=food_id
     )
     builder = await food_builder(
         user_id=user_id,
-        food_id=food_id,
+        id=food_id,
         page=callback_data.page
     )
     await callback.message.edit_reply_markup(
@@ -105,7 +105,7 @@ async def callbacks_remove_from_cart(
         callback_data: FoodCallbackFactory
 ):
     user = callback.from_user
-    food_id = callback_data.food_id
+    food_id = callback_data.id
     await remove_from_cart(
         user.id,
         food_id

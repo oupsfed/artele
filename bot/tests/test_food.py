@@ -7,7 +7,6 @@ from service.food import menu_builder, food_info, food_builder
 from .fixtures.food import FOOD_DATA, CART_DATA
 from .utils import check_paginator
 
-
 pytest_plugins = ('pytest_asyncio',)
 
 
@@ -38,11 +37,11 @@ async def test_menu_builder():
         assert callback_data[1] == 'foodget', (
             'Неправильный food_action'
         )
-        assert int(callback_data[2]) == FOOD_DATA['page'], (
-            'Неправильный page'
-        )
-        assert int(callback_data[3]) == food_id, (
+        assert int(callback_data[2]) == food_id, (
             'Неправильный food_id'
+        )
+        assert int(callback_data[3]) == FOOD_DATA['page'], (
+            'Неправильный page'
         )
     assert builder_data[-1][0].text == 'Добавить товар', (
         'Кнопка администатора "Добавить товар" отсутствует'
@@ -108,58 +107,48 @@ async def test_food_builder():
         ('Удалить товар',),
     ]
     exp_action = [
-        (f'cartcreate',),
+        ('cartcreate',),
         ('cartremove', 'cartcreate'),
         ('foodget_all',),
         ('update_preview',),
         ('remove_preview',),
     ]
+    exp_id = [
+        (str(food['id']),),
+        (str(food['id']), str(food['id'])),
+        ('',),
+        (str(food['id']),),
+        (str(food['id']),),
+    ]
     for row_number in range(len(builder_data)):
         for btn_number in range(len(builder_data[row_number])):
             btn = builder_data[row_number][btn_number]
-            print(btn)
             assert (btn.text ==
                     exp_text[row_number][btn_number]), (
-                f'Кнопка номер {btn_number} в ряду {row_number}'
-                'Не соответствует ожидаемому'
+                (f'Кнопка {btn.text}  не соответствует ожидаемому - '
+                 'Не соответствует ожидаемому')
             )
             callback_data = btn.callback_data.split(':')
             assert callback_data[0] == 'food', (
-                f'Кнопка номер {btn_number} в ряду {row_number}'
-                'Неправильный класс CallbackFactory'
+                (f'Кнопка {btn.text}  не соответствует ожидаемому - '
+                 'Неправильный класс CallbackFactory')
             )
             assert callback_data[1] == exp_action[row_number][btn_number], (
-                f'Кнопка номер {btn_number} в ряду {row_number}'
-                'Неправильный food_action'
+                (f'Кнопка {btn.text}  не соответствует ожидаемому - '
+                 'Неправильный food_action')
             )
-            print(callback_data)
-            exp_id = food['id']
-            if btn.text == '↩️':
-                pass
-            assert int(callback_data[2]) == food['id'], (
-                f'Кнопка номер {btn_number} в ряду {row_number}'
-                'Неправильный food_id'
+            assert callback_data[2] == exp_id[row_number][btn_number], (
+                (f'Кнопка {btn.text}  не соответствует ожидаемому - '
+                 'Неправильный food_id')
             )
 
-    # for food_number in range(len(food_list)):
-    #     food_id = food_list[food_number]['id']
-    #     callback_data = builder_data[food_number][0].callback_data.split(':')
-    #     expected_btn_txt = (f"{food_list[food_number]['name']} "
-    #                         f"- {food_list[food_number]['price']} ₽")
-    #     assert builder_data[food_number][0].text == expected_btn_txt, (
-    #         'Неправильное название кнопок'
-    #     )
-    #
-    # assert builder_data[-1][0].text == 'Добавить товар', (
-    #     'Кнопка администатора "Добавить товар" отсутствует'
-    #     'или имеет неправильный текст'
-    # )
-    # admin_callback = builder_data[-1][0].callback_data.split(':')
-    # assert admin_callback[0] == 'food', (
-    #     'Неправильный класс CallbackFactory '
-    #     'у кнопки администратора "Добавить Товар"'
-    # )
-    # assert admin_callback[1] == 'create_preview', (
-    #     'Неправильный action '
-    #     'у кнопки администратора "Добавить Товар"'
-    # )
+    builder = await food_builder(food=food,
+                                 cart=cart,
+                                 page=2,
+                                 admin=False)
+    builder_data = builder.as_markup()
+    builder_data = builder_data.inline_keyboard
+    assert len(builder_data) == 3, (
+        ('Неправильное количество строк кнопок в builder если '
+         'пользователь не администратор')
+    )

@@ -4,11 +4,11 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import Message
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-from middlewares.role import IsAdminMessageMiddleware
+from middlewares.role import IsAdminMessageMiddleware, is_admin
 from service.food import (FOOD_COL, FoodCallbackFactory,
                           admin_edit_food_builder, download_and_encode_image,
                           food_action, food_builder, food_info, menu_builder)
-from utils import delete_api_answer, patch_api_answer
+from utils import delete_api_answer, patch_api_answer, get_api_answer
 
 MAIN_MESSAGE = 'Меню'
 
@@ -36,7 +36,7 @@ async def callbacks_show_food(
         callback_data: FoodCallbackFactory
 ):
     builder = await admin_edit_food_builder(
-        food_id=callback_data.food_id,
+        food_id=callback_data.id,
         page=callback_data.page
     )
     await callback.message.edit_reply_markup(
@@ -51,10 +51,10 @@ async def callbacks_edit_food(
         callback_data: FoodCallbackFactory,
         state: FSMContext
 ):
-    await state.update_data(id=callback_data.food_id,
-                            col=callback_data.food_column)
+    await state.update_data(id=callback_data.id,
+                            col=callback_data.column)
     await callback.message.answer(
-        text=f'Введите (Пришлите) {FOOD_COL[callback_data.food_column]}'
+        text=f'Введите (Пришлите) {FOOD_COL[callback_data.column]}'
     )
     await state.set_state(EditFood.name)
 
@@ -65,7 +65,6 @@ async def callbacks_edit_food_confirm(
         state: FSMContext,
         bot: Bot):
     data = await state.get_data()
-    food_id = data['id']
     if data['col'] == 'image':
         data['name'] = await download_and_encode_image(message.photo[-1])
 
@@ -73,14 +72,20 @@ async def callbacks_edit_food_confirm(
         await state.update_data(name=message.text)
         data = await state.get_data()
     await state.clear()
-    patch_api_answer(f'food/{food_id}/',
-                     data={
-                         data['col']: data['name']
-                     })
-    food_data = await food_info(food_id)
+    food = patch_api_answer(f'food/{data["id"]}/',
+                            data={
+                                data['col']: data['name']
+                            }).json()
+    cart = get_api_answer('cart/',
+                          params={
+                              'user': message.from_user.id,
+                              'food': food['id']
+                          }).json()
+    food_data = await food_info(food)
     builder = await food_builder(
-        message.from_user.id,
-        food_id
+        cart=cart,
+        food=food,
+        admin=is_admin(message.from_user.id)
     )
     await message.answer_photo(
         food_data['image'],
@@ -100,13 +105,13 @@ async def callbacks_delete_food(
         text='Удалить',
         callback_data=FoodCallbackFactory(
             action=food_action.remove,
-            food_id=callback_data.food_id)
+            id=callback_data.id)
     )
     builder.button(
         text='Отмена',
         callback_data=FoodCallbackFactory(
             action=food_action.get,
-            food_id=callback_data.food_id)
+            id=callback_data.id)
     )
     await callback.message.edit_reply_markup(
         reply_markup=builder.as_markup()
@@ -118,7 +123,7 @@ async def callbacks_delete_food(
         callback: types.CallbackQuery,
         callback_data: FoodCallbackFactory
 ):
-    delete_api_answer(f'food/{callback_data.food_id}')
+    delete_api_answer(f'food/{callback_data.id}')
     await callback.message.answer(
         'Товар успешно удален')
     await callback.message.delete()

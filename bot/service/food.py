@@ -4,7 +4,6 @@ from typing import Optional
 
 from aiogram.types import PhotoSize, URLInputFile
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-from middlewares.role import is_admin
 from service.cart import cart_action
 from utils import Action, ArteleCallbackData, bot, get_api_answer, paginate_builder
 
@@ -24,14 +23,23 @@ food_action.remove_preview = 'remove_preview'
 
 
 class FoodCallbackFactory(ArteleCallbackData, prefix='food'):
-    food_id: Optional[int]
-    food_column: Optional[str]
-    for_staff: Optional[bool] = False
+    column: Optional[str]
 
 
 async def menu_builder(json_response: dict,
                        pagination: bool = True,
                        admin: bool = False) -> InlineKeyboardBuilder:
+    """
+    Функция формирования кнопок для меню товаров.
+
+            Parameters:
+                    json_response (dict) : словарь ответа API товаров
+                    pagination (bool) : включена ли пагинация в проекте
+                    admin (bool): подключать ли функции администратора
+
+            Returns:
+                    builder (InlineKeyboardBuilder): объект кнопок
+    """
     food_list = json_response
     page = 1
     if pagination:
@@ -44,8 +52,9 @@ async def menu_builder(json_response: dict,
             text=f"{food['name']} - {food['price']} ₽",
             callback_data=FoodCallbackFactory(
                 action=food_action.get,
-                food_id=food['id'],
-                page=page)
+                page=page,
+                id=food['id'],
+                )
         )
         rows.append(1)
     page_buttons, builder = await paginate_builder(
@@ -69,6 +78,15 @@ async def menu_builder(json_response: dict,
 
 
 async def food_info(food: dict) -> dict:
+    """
+    Функция формирования текста сообщения определенного товара.
+
+            Parameters:
+                    food (dict) : словарь товара
+
+            Returns:
+                    data (dict): словарь содержащий текст и изображение товара
+    """
     text = (f"<b>{food['name']}</b> \n"
             f"{food['description']} \n"
             f"Вес: {food['weight']} г. \n"
@@ -85,7 +103,19 @@ async def food_info(food: dict) -> dict:
 async def food_builder(cart: dict,
                        food: dict,
                        page: int = 1,
-                       admin: bool = False):
+                       admin: bool = False) -> InlineKeyboardBuilder:
+    """
+    Функция формирования кнопок для определенного товара.
+
+            Parameters:
+                    cart (dict) : словарь ответа API корзины
+                    food (bool) : словаь определенного товара
+                    page (int) : страница с которой перешли в карточку товара
+                    admin (bool): подключать ли функции администратора
+
+            Returns:
+                    builder (InlineKeyboardBuilder): объект кнопок
+    """
     cart = cart['results'][0]
     amount = 0
     food_price = food['price']
@@ -97,7 +127,7 @@ async def food_builder(cart: dict,
         text=f'{amount} шт. ({amount * food_price} ₽)',
         callback_data=FoodCallbackFactory(
             action=cart_action.create,
-            food_id=food['id']
+            id=food['id']
         )
     )
     rows.append(1)
@@ -105,14 +135,14 @@ async def food_builder(cart: dict,
         text='➖',
         callback_data=FoodCallbackFactory(
             action=cart_action.remove,
-            food_id=food['id']
+            id=food['id']
         )
     )
     builder.button(
         text='➕',
         callback_data=FoodCallbackFactory(
             action=cart_action.create,
-            food_id=food['id']
+            id=food['id']
         )
     )
     rows.append(2)
@@ -129,7 +159,7 @@ async def food_builder(cart: dict,
             text='Редактировать товар',
             callback_data=FoodCallbackFactory(
                 action=food_action.update_preview,
-                food_id=food['id'],
+                id=food['id'],
                 page=page
             )
         )
@@ -138,7 +168,7 @@ async def food_builder(cart: dict,
             text='Удалить товар',
             callback_data=FoodCallbackFactory(
                 action=food_action.remove_preview,
-                food_id=food['id'],
+                id=food['id'],
                 page=page)
         )
         rows.append(1)
@@ -146,93 +176,33 @@ async def food_builder(cart: dict,
     return builder
 
 
-# async def food_builder(user_id: int,
-#                        food_id: int,
-#                        page: int = 1):
-#     cart = get_api_answer(
-#         'cart/',
-#         params={
-#             'user': user_id,
-#             'food': food_id
-#         }).json()
-#     cart = cart['results']
-#     amount = 0
-#     food_price = 0
-#     if cart:
-#         amount = cart[0]['amount']
-#         food_price = cart[0]['food']['price']
-#     builder = InlineKeyboardBuilder()
-#     rows = []
-#     builder.button(
-#         text=f'{amount} шт. ({amount * food_price} ₽)',
-#         callback_data=FoodCallbackFactory(
-#             action=cart_action.create,
-#             food_id=food_id
-#         )
-#     )
-#     rows.append(1)
-#     builder.button(
-#         text='➖',
-#         callback_data=FoodCallbackFactory(
-#             action=cart_action.remove,
-#             food_id=food_id
-#         )
-#     )
-#     builder.button(
-#         text='➕',
-#         callback_data=FoodCallbackFactory(
-#             action=cart_action.create,
-#             food_id=food_id
-#         )
-#     )
-#     rows.append(2)
-#     builder.button(
-#         text='↩️',
-#         callback_data=FoodCallbackFactory(
-#             action=food_action.get_all,
-#             page=page
-#         )
-#     )
-#     rows.append(1)
-#     if is_admin(user_id):
-#         builder.button(
-#             text='Редактировать товар',
-#             callback_data=FoodCallbackFactory(
-#                 action=food_action.update_preview,
-#                 food_id=food_id,
-#                 page=page
-#             )
-#         )
-#         rows.append(1)
-#         builder.button(
-#             text='Удалить товар',
-#             callback_data=FoodCallbackFactory(
-#                 action=food_action.remove_preview,
-#                 food_id=food_id,
-#                 page=page)
-#         )
-#         rows.append(1)
-#     builder.adjust(*rows)
-#     return builder
-
-
 async def admin_edit_food_builder(food_id: int,
                                   page: int = 1):
+    """
+    Функция формирования кнопок для редактирования товара.
+
+            Parameters:
+                    food_id (int) : id объекта Food
+                    page (int) : страница для возврата к меню
+
+            Returns:
+                    builder (InlineKeyboardBuilder): объект кнопок
+    """
     builder = InlineKeyboardBuilder()
     for col, name in FOOD_COL.items():
         builder.button(
             text=f'Изменить {name}',
             callback_data=FoodCallbackFactory(
                 action=food_action.update_column,
-                food_column=col,
-                food_id=food_id)
+                column=col,
+                id=food_id)
         )
 
     builder.button(
         text='Назад',
         callback_data=FoodCallbackFactory(
             action=food_action.get,
-            food_id=food_id,
+            id=food_id,
             page=page)
     )
     builder.adjust(1)
@@ -240,6 +210,14 @@ async def admin_edit_food_builder(food_id: int,
 
 
 async def add_food_builder():
+    """
+    Функция формирования кнопок для добавления товара.
+
+            Parameters:
+
+            Returns:
+                    builder (InlineKeyboardBuilder): объект кнопок
+    """
     builder = InlineKeyboardBuilder()
     builder.button(
         text='Отмена',
@@ -249,7 +227,16 @@ async def add_food_builder():
     return builder
 
 
-async def download_and_encode_image(photo: PhotoSize):
+async def download_and_encode_image(photo: PhotoSize) -> str:
+    """
+    Функция кодирования фотографии с сообщения в телеграме в base64.
+
+            Parameters:
+                    photo (PhotoSize) : объект изображения
+
+            Returns:
+                    str (str): закодированную base64 строку изображения
+    """
     direction = f"tmp/{photo.file_id}.jpg"
     await bot.download(
         photo,

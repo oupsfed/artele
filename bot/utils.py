@@ -50,8 +50,8 @@ class Action:
 
 class ArteleCallbackData(CallbackData, prefix='artele'):
     action: str
-    page: Optional[int] = 1
-    back_data: Optional[CallbackData]
+    id: Optional[int]
+    page: int = 1
 
 
 def get_api_answer(endpoint: str,

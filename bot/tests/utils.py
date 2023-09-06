@@ -15,9 +15,9 @@ def check_paginator(paginators_btns, page):
     assert 'get_all' in callback_next[1], (
         'кнопка вперед возвращает неправильную callback_data_action'
     )
-    assert int(callback_prev[2]) == page - 1, (
+    assert int(callback_prev[3]) == page - 1, (
         'кнопка назад возвращает неправильную callback_data_page'
     )
-    assert int(callback_next[2]) == page + 1, (
+    assert int(callback_next[3]) == page + 1, (
         'кнопка вперед возвращает неправильную callback_data_page'
     )
