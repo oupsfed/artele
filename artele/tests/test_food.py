@@ -3,6 +3,7 @@ from http import HTTPStatus
 
 import pytest
 from dotenv import load_dotenv
+
 from tests.utils import check_pagination, create_foods
 
 pytestmark = pytest.mark.django_db

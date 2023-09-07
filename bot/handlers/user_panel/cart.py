@@ -8,6 +8,7 @@ from logger import logger
 from service.cart import (CartCallbackFactory, add_to_cart, cart_action,
                           cart_builder, remove_from_cart)
 from service.food import food_info
+from utils import get_api_answer
 
 router = Router()
 
@@ -16,9 +17,18 @@ MAIN_MESSAGE = 'Корзина:'
 
 @router.message(Text('Корзина'))
 async def menu(message: types.Message):
+    user_id = message.from_user.id
+    cart = get_api_answer(
+        'cart/',
+        params={
+            'user': user_id,
+        }).json()
+    total_price = get_api_answer(
+        f'cart/{user_id}/sum/'
+    ).json()
     builder = await cart_builder(
-        user_id=message.from_user.id,
-        page=1
+        json_response=cart,
+        total_price=total_price['total']
     )
     await message.answer(
         MAIN_MESSAGE,
@@ -31,9 +41,19 @@ async def callbacks_show_cart(
         callback: types.CallbackQuery,
         callback_data: CartCallbackFactory
 ):
+    user_id = callback.from_user.id
+    cart = get_api_answer(
+        'cart/',
+        params={
+            'user': user_id,
+            'page': callback_data.page
+        }).json()
+    total_price = get_api_answer(
+        f'cart/{user_id}/sum/'
+    ).json()
     builder = await cart_builder(
-        user_id=callback.from_user.id,
-        page=callback_data.page
+        json_response=cart,
+        total_price=total_price['total']
     )
     if callback.message.photo:
         await callback.message.delete()
@@ -48,7 +68,7 @@ async def callbacks_show_cart(
 
 
 @router.callback_query(CartCallbackFactory.filter(F.action == cart_action.get))
-async def callbacks_show_cart(
+async def callbacks_show_food(
         callback: types.CallbackQuery,
         callback_data: CartCallbackFactory
 ):

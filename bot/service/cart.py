@@ -1,43 +1,35 @@
 from http import HTTPStatus
-from typing import Optional
 
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
+from core.actions import cart_action, food_action
+from core.builders import encode_callback, paginate_builder
+from core.factories import CartCallbackFactory, FoodCallbackFactory
 from logger import logger
 from service.order import OrderCallbackFactory, order_action
-from utils import (Action, ArteleCallbackData, delete_api_answer,
-                   get_api_answer, post_api_answer)
-
-cart_action = Action('cart')
+from utils import delete_api_answer, get_api_answer, post_api_answer
 
 
-class CartCallbackFactory(ArteleCallbackData, prefix='cart'):
-    cart_id: Optional[int]
-    food_id: Optional[int]
-    user_id: Optional[int]
-
-
-async def cart_builder(user_id: int,
-                       page: int = 1):
-    answer = get_api_answer(
-        'cart/',
-        params={
-            'user': user_id,
-            'page': page
-        })
-    answer = answer.json()
-    cart_data = answer['results']
+async def cart_builder(json_response: dict,
+                       total_price: int):
+    cart_data = json_response['results']
+    page = json_response['page']
     builder = InlineKeyboardBuilder()
-    total_price = 0
     rows = []
+    back = encode_callback(
+        CartCallbackFactory(
+            action=cart_action.get_all
+        )
+    )
     for cart in cart_data:
         food = cart['food']
-        total_price += food['price'] * cart['amount']
+        user = cart['user']
         builder.button(
             text=f"{food['name']} - {cart['amount']} шт.",
-            callback_data=CartCallbackFactory(
-                action=cart_action.get,
-                food_id=food['id'],
+            callback_data=FoodCallbackFactory(
+                action=food_action.get,
+                back=back,
+                id=food['id'],
                 page=page)
         )
         rows.append(1)
@@ -46,7 +38,7 @@ async def cart_builder(user_id: int,
             callback_data=CartCallbackFactory(
                 action=cart_action.remove,
                 food_id=food['id'],
-                user_id=user_id,
+                user_id=user['telegram_chat_id'],
                 page=page)
         )
         builder.button(
@@ -54,27 +46,16 @@ async def cart_builder(user_id: int,
             callback_data=CartCallbackFactory(
                 action=cart_action.create,
                 food_id=food['id'],
-                user_id=user_id,
+                user_id=user['telegram_chat_id'],
                 page=page)
         )
         rows.append(2)
-    page_buttons = 0
-    if answer['previous']:
-        builder.button(
-            text="⬅️",
-            callback_data=CartCallbackFactory(
-                action=cart_action.get_all,
-                page=page - 1)
-        )
-        page_buttons += 1
-    if answer['next']:
-        builder.button(
-            text="➡️",
-            callback_data=CartCallbackFactory(
-                action=cart_action.get_all,
-                page=page + 1)
-        )
-        page_buttons += 1
+    page_buttons, builder = await paginate_builder(
+        json_response,
+        builder,
+        CartCallbackFactory,
+        cart_action.get_all
+    )
     if page_buttons > 0:
         rows.append(page_buttons)
     builder.button(

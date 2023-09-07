@@ -5,9 +5,10 @@ from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import Message
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
+from core.actions import food_action
+from core.factories import FoodCallbackFactory
 from middlewares.role import IsAdminMessageMiddleware, is_admin
-from service.food import (FOOD_COL, FoodCallbackFactory,
-                          admin_edit_food_builder, encode_image, food_action,
+from service.food import (FOOD_COL, admin_edit_food_builder, encode_image,
                           food_builder, food_info, menu_builder)
 from utils import delete_api_answer, get_api_answer, patch_api_answer
 

@@ -10,6 +10,7 @@ class CustomPagePagination(PageNumberPagination):
 
     page: int - Номер страницы
     """
+
     def get_paginated_response(self, data):
         return Response(OrderedDict([
             ('count', self.page.paginator.count),

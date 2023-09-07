@@ -45,6 +45,7 @@ async def callbacks_show_food(
     food_data = await food_info(food)
     builder = await food_builder(cart=cart,
                                  food=food,
+                                 callback=callback_data.back,
                                  admin=is_admin(user_id))
     await callback.message.answer_photo(
         food_data['image'],
@@ -90,11 +91,11 @@ async def callbacks_add_to_cart(
     food_id = callback_data.id
     await add_to_cart(
         user_id=user_id,
-        id=food_id
+        food_id=food_id
     )
     builder = await food_builder(
         user_id=user_id,
-        id=food_id,
+        food_id=food_id,
         page=callback_data.page
     )
     await callback.message.edit_reply_markup(

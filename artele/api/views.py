@@ -1,14 +1,14 @@
 from http import HTTPStatus
 
-from django.db.models import F, Sum
+from django.db.models import F, IntegerField, Sum
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from food.models import Cart, Food, Order
 from fpdf import FPDF
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
-from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
+
+from food.models import Cart, Food, Order
 from users.models import User
 
 from .filters import CartFilter, OrderFilter
@@ -66,6 +66,8 @@ class FoodViewSet(viewsets.ModelViewSet):
 class CartViewSet(viewsets.ModelViewSet):
     """
     Вьюсет корзины товаров.
+    дополнительный URL:
+    `cart/{telegram_chat_id}/sum/` -- подсчет общей суммы корзины
     измененные URL:
     create -- если товар в корзине уже есть то
     увеличивается поле amount
@@ -77,8 +79,23 @@ class CartViewSet(viewsets.ModelViewSet):
     serializer_class = CartCreateSerializer
     filter_backends = (DjangoFilterBackend,)
     filterset_class = CartFilter
-    pagination_class = PageNumberPagination
+    pagination_class = CustomPagePagination
     pagination_class.page_size = 3
+
+    @action(
+        methods=['GET'],
+        detail=True,
+        url_path='sum',
+    )
+    def authorize_list(self, request, pk):
+        self.pagination_class = None
+        cart_data = Cart.objects.filter(
+            user__telegram_chat_id=pk
+        ).aggregate(
+            total=Sum(F('food__price') * F('amount'),
+                      output_field=IntegerField())
+        )
+        return Response(cart_data)
 
     def create(self, request, *args, **kwargs):
         if 'user' not in request.data or 'food' not in request.data:

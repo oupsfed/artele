@@ -1,12 +1,13 @@
 import base64
 import os
-from typing import Optional
 
 from aiogram.types import URLInputFile
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
+from core.actions import food_action
+from core.builders import back_builder, encode_callback, paginate_builder
+from core.factories import FoodCallbackFactory
 from service.cart import cart_action
-from utils import Action, ArteleCallbackData, paginate_builder
 
 FOOD_COL = {
     'name': 'название',
@@ -15,16 +16,6 @@ FOOD_COL = {
     'price': 'цена',
     'image': 'фото'
 }
-
-food_action: Action = Action('food')
-food_action.create_preview = 'create_preview'
-food_action.update_preview = 'update_preview'
-food_action.update_column = 'update_column'
-food_action.remove_preview = 'remove_preview'
-
-
-class FoodCallbackFactory(ArteleCallbackData, prefix='food'):
-    column: Optional[str]
 
 
 async def menu_builder(json_response: dict,
@@ -48,11 +39,17 @@ async def menu_builder(json_response: dict,
         page = json_response['page']
     builder = InlineKeyboardBuilder()
     rows = []
+    back = encode_callback(
+        FoodCallbackFactory(
+            action=food_action.get_all
+        )
+    )
     for food in food_list:
         builder.button(
             text=f"{food['name']} - {food['price']} ₽",
             callback_data=FoodCallbackFactory(
                 action=food_action.get,
+                back=back,
                 page=page,
                 id=food['id'])
         )
@@ -102,6 +99,7 @@ async def food_info(food: dict) -> dict:
 
 async def food_builder(cart: dict,
                        food: dict,
+                       callback: str = 'food.foodget_all...1..',
                        page: int = 1,
                        admin: bool = False) -> InlineKeyboardBuilder:
     """
@@ -110,6 +108,7 @@ async def food_builder(cart: dict,
             Parameters:
                     cart (dict) : словарь ответа API корзины
                     food (bool) : словаь определенного товара
+                    callback (str) : строка callback_data для кнопки назад
                     page (int) : страница с которой перешли в карточку товара
                     admin (bool): подключать ли функции администратора
 
@@ -146,12 +145,9 @@ async def food_builder(cart: dict,
         )
     )
     rows.append(2)
-    builder.button(
-        text='↩️',
-        callback_data=FoodCallbackFactory(
-            action=food_action.get_all,
-            page=page
-        )
+    builder = await back_builder(
+        builder,
+        callback
     )
     rows.append(1)
     if admin:

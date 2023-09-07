@@ -1,20 +1,9 @@
-from typing import Optional
-
 from aiogram.types import URLInputFile
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-from utils import URL, Action, ArteleCallbackData, get_api_answer
-
-orders_list_actions = Action('ord_list')
-orders_list_actions.filter_by_user = 'by_user'
-orders_list_actions.filter_by_food = 'by_food'
-orders_list_actions.download = 'download'
-orders_list_actions.order_done = 'ord_done'
-orders_list_actions.order_cancel = 'ord_cancel'
-
-
-class OrderListCallbackFactory(ArteleCallbackData, prefix='ord_list'):
-    order_id: Optional[int]
+from core.actions import orders_list_actions
+from core.factories import OrderListCallbackFactory
+from utils import URL, get_api_answer
 
 
 async def order_list_by_food():
