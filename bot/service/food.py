@@ -4,8 +4,9 @@ from typing import Optional
 
 from aiogram.types import URLInputFile
 from aiogram.utils.keyboard import InlineKeyboardBuilder
+
 from service.cart import cart_action
-from utils import Action, ArteleCallbackData, bot, get_api_answer, paginate_builder
+from utils import Action, ArteleCallbackData, paginate_builder
 
 FOOD_COL = {
     'name': 'название',
@@ -53,8 +54,7 @@ async def menu_builder(json_response: dict,
             callback_data=FoodCallbackFactory(
                 action=food_action.get,
                 page=page,
-                id=food['id'],
-                )
+                id=food['id'])
         )
         rows.append(1)
     page_buttons, builder = await paginate_builder(

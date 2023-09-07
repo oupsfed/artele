@@ -2,14 +2,14 @@ from aiogram import Router, types
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.filters import Text
 from aiogram.fsm.context import FSMContext
-from logger import logger
 from magic_filter import F
+
+from logger import logger
+from middlewares.role import is_admin
 from service.cart import add_to_cart, cart_action, remove_from_cart
 from service.food import (FoodCallbackFactory, food_action, food_builder,
                           food_info, menu_builder)
 from utils import get_api_answer
-from middlewares.role import is_admin
-
 
 router = Router()
 
@@ -37,7 +37,7 @@ async def callbacks_show_food(
 ):
     user_id = callback.from_user.id
     food = get_api_answer(f'food/{callback_data.id}/').json()
-    cart = get_api_answer(f'cart/',
+    cart = get_api_answer('cart/',
                           params={
                               'user': user_id,
                               'food': food['id']

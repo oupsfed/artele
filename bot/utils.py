@@ -1,16 +1,15 @@
 import json
 import os
 from http import HTTPStatus
-from sys import stdout
 from typing import Optional
 
 import requests
 from aiogram import Bot
 from aiogram.filters.callback_data import CallbackData
-from aiogram.types import InlineKeyboardButton
 from dotenv import load_dotenv
-from logger import logger
 from requests import Response
+
+from logger import logger
 
 load_dotenv()
 

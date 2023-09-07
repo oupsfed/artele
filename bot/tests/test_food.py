@@ -7,10 +7,10 @@ import pytest
 from aiogram.types import URLInputFile
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-from service.food import (menu_builder, food_info, food_builder,
-                          admin_edit_food_builder, FOOD_COL, add_food_builder,
-                          encode_image)
-from .fixtures.food import FOOD_DATA, CART_DATA
+from service.food import (FOOD_COL, add_food_builder, admin_edit_food_builder,
+                          encode_image, food_builder, food_info, menu_builder)
+
+from .fixtures.food import CART_DATA, FOOD_DATA
 from .utils import check_paginator
 
 pytest_plugins = ('pytest_asyncio',)
