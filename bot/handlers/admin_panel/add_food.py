@@ -4,7 +4,7 @@ from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import Message
 from middlewares.role import IsAdminMessageMiddleware
 from service.food import (FoodCallbackFactory, add_food_builder,
-                          download_and_encode_image, food_action, food_builder,
+                          encode_image, food_action, food_builder,
                           food_info)
 from utils import post_api_answer
 
@@ -97,8 +97,14 @@ async def callbacks_add_food_confirm(
         message: Message,
         state: FSMContext,
         bot: Bot):
-    image_string = await download_and_encode_image(message.photo[-1])
-    await state.update_data(image=image_string)
+    photo = message.photo[-1]
+    direction = f"tmp/{photo.file_id}.jpg"
+    await bot.download(
+        photo,
+        destination=direction
+    )
+    encode_img = await encode_image(direction)
+    await state.update_data(image=encode_img)
     data = await state.get_data()
     answer = post_api_answer('food/',
                              data=data)

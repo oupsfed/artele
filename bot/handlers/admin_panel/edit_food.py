@@ -6,7 +6,7 @@ from aiogram.types import Message
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from middlewares.role import IsAdminMessageMiddleware, is_admin
 from service.food import (FOOD_COL, FoodCallbackFactory,
-                          admin_edit_food_builder, download_and_encode_image,
+                          admin_edit_food_builder, encode_image,
                           food_action, food_builder, food_info, menu_builder)
 from utils import delete_api_answer, patch_api_answer, get_api_answer
 
@@ -66,8 +66,14 @@ async def callbacks_edit_food_confirm(
         bot: Bot):
     data = await state.get_data()
     if data['col'] == 'image':
-        data['name'] = await download_and_encode_image(message.photo[-1])
-
+        photo = message.photo[-1]
+        direction = f"tmp/{photo.file_id}.jpg"
+        await bot.download(
+            photo,
+            destination=direction
+        )
+        encode_data = await encode_image(direction)
+        data['name'] = encode_data
     else:
         await state.update_data(name=message.text)
         data = await state.get_data()

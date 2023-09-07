@@ -1,6 +1,7 @@
 from aiogram import Router, types
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.filters import Text
+from aiogram.fsm.context import FSMContext
 from logger import logger
 from magic_filter import F
 from service.cart import add_to_cart, cart_action, remove_from_cart
@@ -16,7 +17,9 @@ MAIN_MESSAGE = 'Меню:'
 
 
 @router.message(Text('Меню'))
-async def menu(message: types.Message):
+async def menu(message: types.Message,
+               state: FSMContext,):
+    await state.clear()
     builder = await menu_builder(
         get_api_answer('food/').json(),
         admin=is_admin(message.from_user.id)
@@ -54,10 +57,10 @@ async def callbacks_show_food(
 @router.callback_query(FoodCallbackFactory.filter(F.action == food_action.get_all))
 async def callbacks_show_page(
         callback: types.CallbackQuery,
-        callback_data: FoodCallbackFactory
+        callback_data: FoodCallbackFactory,
+        state: FSMContext,
 ):
-    # builder = await menu_builder(page=callback_data.page,
-    #                              user_id=callback.from_user.id)
+    await state.clear()
     builder = await menu_builder(
         get_api_answer('food/',
                        params={

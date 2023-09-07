@@ -1,9 +1,15 @@
 import asyncio
+import base64
+import os
+import shutil
+
 import pytest
 from aiogram.types import URLInputFile
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-from service.food import menu_builder, food_info, food_builder
+from service.food import (menu_builder, food_info, food_builder,
+                          admin_edit_food_builder, FOOD_COL, add_food_builder,
+                          encode_image)
 from .fixtures.food import FOOD_DATA, CART_DATA
 from .utils import check_paginator
 
@@ -76,7 +82,13 @@ async def test_food_info():
         'Текст сообщения не соответствует ожидаемому'
     )
     assert isinstance(food_data['image'], URLInputFile), (
-        'Изображение не соответствует ожидаемому'
+        'При отсутсвии изображения на товаре, '
+        'должно быть изображение по умолчанию'
+    )
+    food_data = await food_info(FOOD_DATA['results'][2])
+    assert isinstance(food_data['image'], URLInputFile), (
+        'При наличии изображения на товаре, '
+        'должен возвращаться объект URLInputFile'
     )
 
 
@@ -152,3 +164,124 @@ async def test_food_builder():
         ('Неправильное количество строк кнопок в builder если '
          'пользователь не администратор')
     )
+
+
+@pytest.mark.asyncio
+async def test_edit_food_builder():
+    food = FOOD_DATA['results'][0]
+    builder = await admin_edit_food_builder(
+        food_id=food['id']
+    )
+    assert isinstance(builder, InlineKeyboardBuilder), (
+        'Функция должна вернуть класс InlineKeyboardBuilder'
+    )
+    builder_data = builder.as_markup()
+    builder_data = builder_data.inline_keyboard
+    assert len(builder_data) == len(FOOD_COL) + 1, (
+        'Неправильное количество строк кнопок в builder'
+    )
+    i = 0
+    for col, name in FOOD_COL.items():
+        row = builder_data[i]
+        assert len(row) == 1, (
+            'В ряду должна быть одна кнопка'
+        )
+        btn = builder_data[i][0]
+        exp_text = f'Изменить {name}'
+        assert btn.text == exp_text, (
+            f'В кнопке {btn.text} неправильный текст'
+        )
+        callback_data = btn.callback_data.split(':')
+        assert callback_data[0] == 'food', (
+            (f'Кнопка {btn.text}  не соответствует ожидаемому - '
+             'Неправильный класс CallbackFactory')
+        )
+        assert callback_data[1] == 'update_column', (
+            (f'Кнопка {btn.text}  не соответствует ожидаемому - '
+             'Неправильный food_action')
+        )
+        assert callback_data[2] == str(food['id']), (
+            (f'Кнопка {btn.text}  не соответствует ожидаемому - '
+             'Неправильный food_id')
+        )
+        assert callback_data[3] == '1', (
+            (f'Кнопка {btn.text}  не соответствует ожидаемому - '
+             'Не установлено значение page по умолчанию')
+        )
+        assert callback_data[4] == col, (
+            (f'Кнопка {btn.text}  не соответствует ожидаемому - '
+             'Неправильный column')
+        )
+        i += 1
+    back_btn = builder_data[-1][0]
+    callback_data = back_btn.callback_data.split(':')
+    print(back_btn)
+    assert back_btn.text == 'Назад', (
+        f'В кнопке {back_btn.text} неправильный текст'
+    )
+    assert callback_data[0] == 'food', (
+        (f'Кнопка {back_btn.text}  не соответствует ожидаемому - '
+         'Неправильный класс CallbackFactory')
+    )
+    assert callback_data[1] == 'foodget', (
+        (f'Кнопка {back_btn.text}  не соответствует ожидаемому - '
+         'Неправильный food_action')
+    )
+    assert callback_data[2] == str(food['id']), (
+        (f'Кнопка {back_btn.text}  не соответствует ожидаемому - '
+         'Неправильный food_id')
+    )
+    assert callback_data[3] == '1', (
+        (f'Кнопка {back_btn.text}  не соответствует ожидаемому - '
+         'Не установлено значение page по умолчанию')
+    )
+
+
+@pytest.mark.asyncio
+async def test_add_food_builder():
+    builder = await add_food_builder()
+    assert isinstance(builder, InlineKeyboardBuilder), (
+        'Функция должна вернуть класс InlineKeyboardBuilder'
+    )
+    builder_data = builder.as_markup()
+    builder_data = builder_data.inline_keyboard
+    assert len(builder_data) == 1, (
+        'Неправильное количество строк кнопок в builder'
+    )
+    back_btn = builder_data[-1][0]
+    callback_data = back_btn.callback_data.split(':')
+    assert back_btn.text == 'Отмена', (
+        f'В кнопке {back_btn.text} неправильный текст'
+    )
+    assert callback_data[0] == 'food', (
+        (f'Кнопка {back_btn.text}  не соответствует ожидаемому - '
+         'Неправильный класс CallbackFactory')
+    )
+    assert callback_data[1] == 'foodget_all', (
+        (f'Кнопка {back_btn.text}  не соответствует ожидаемому - '
+         'Неправильный food_action')
+    )
+    assert callback_data[3] == '1', (
+        (f'Кнопка {back_btn.text}  не соответствует ожидаемому - '
+         'Не установлено значение page по умолчанию')
+    )
+
+
+@pytest.mark.asyncio
+async def test_download_encode_image():
+    main_image = 'tests/fixtures/test_image.png'
+    tmp_image = 'tests/fixtures/tmp.png'
+    shutil.copy2(main_image, tmp_image)
+    encode_data = await encode_image(tmp_image)
+    assert isinstance(encode_data, str), (
+        'Функция должна возвращать кодированную строку'
+    )
+    assert os.path.isfile(tmp_image) is False, (
+        'После выполнения функции изображение должно удалиться '
+        'с сервера'
+    )
+    with open(main_image, "rb") as img_file:
+        assert encode_data == base64.b64encode(
+            img_file.read()).decode('utf-8'), (
+            'Изображение неправильно кодируется в base64'
+        )

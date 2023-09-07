@@ -2,7 +2,7 @@ import base64
 import os
 from typing import Optional
 
-from aiogram.types import PhotoSize, URLInputFile
+from aiogram.types import URLInputFile
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from service.cart import cart_action
 from utils import Action, ArteleCallbackData, bot, get_api_answer, paginate_builder
@@ -116,10 +116,10 @@ async def food_builder(cart: dict,
             Returns:
                     builder (InlineKeyboardBuilder): объект кнопок
     """
-    cart = cart['results'][0]
     amount = 0
     food_price = food['price']
-    if cart:
+    if len(cart['results']) > 0:
+        cart = cart['results'][0]
         amount = cart['amount']
     builder = InlineKeyboardBuilder()
     rows = []
@@ -222,27 +222,22 @@ async def add_food_builder():
     builder.button(
         text='Отмена',
         callback_data=FoodCallbackFactory(
-            action=food_action.get)
+            action=food_action.get_all)
     )
     return builder
 
 
-async def download_and_encode_image(photo: PhotoSize) -> str:
+async def encode_image(img_dir: str) -> str:
     """
-    Функция кодирования фотографии с сообщения в телеграме в base64.
+    Функция кодирования изображения в base64.
 
             Parameters:
-                    photo (PhotoSize) : объект изображения
+                    img_dir (str) : путь к загруженному изображению
 
             Returns:
                     str (str): закодированную base64 строку изображения
     """
-    direction = f"tmp/{photo.file_id}.jpg"
-    await bot.download(
-        photo,
-        destination=direction
-    )
-    with open(direction, "rb") as image_file:
-        encoded_string = base64.b64encode(image_file.read())
-    os.remove(direction)
+    with open(img_dir, "rb") as img_file:
+        encoded_string = base64.b64encode(img_file.read())
+    os.remove(img_dir)
     return encoded_string.decode('utf-8')
