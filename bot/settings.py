@@ -1,13 +1,8 @@
-import json
 import os
-from http import HTTPStatus
 from pathlib import Path
 
-import requests
 from aiogram import Bot
 from dotenv import load_dotenv
-from logger import logger
-from requests import Response
 
 load_dotenv()
 

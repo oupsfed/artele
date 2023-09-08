@@ -1,8 +1,8 @@
 import pytest
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-
 from core.actions import food_action, order_action
 from service.cart import cart_builder
+
 from .fixtures.cart import CART_LIST_PAGE_2, TOTAL_PRICE
 from .utils import check_paginator
 
