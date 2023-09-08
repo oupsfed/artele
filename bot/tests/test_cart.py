@@ -1,16 +1,8 @@
-import asyncio
-import base64
-import os
-import shutil
-
 import pytest
-from aiogram.types import URLInputFile
 from aiogram.utils.keyboard import InlineKeyboardBuilder
+
 from core.actions import food_action, order_action
 from service.cart import cart_builder
-from service.food import (FOOD_COL, add_food_builder, admin_edit_food_builder,
-                          encode_image, food_builder, food_info, menu_builder)
-
 from .fixtures.cart import CART_LIST_PAGE_2, TOTAL_PRICE
 from .utils import check_paginator
 
