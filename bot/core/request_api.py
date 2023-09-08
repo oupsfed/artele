@@ -5,9 +5,8 @@ from http import HTTPStatus
 import requests
 from aiogram import Bot
 from dotenv import load_dotenv
-from requests import Response
-
 from logger import logger
+from requests import Response
 
 load_dotenv()
 

@@ -1,7 +1,6 @@
 from aiogram import Bot, Router, types
 from aiogram.filters import Text
 from magic_filter import F
-
 from service.order import (OrderCallbackFactory, order_action, order_builder,
                            order_create, order_info, order_update)
 

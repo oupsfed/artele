@@ -2,7 +2,6 @@ from typing import Any, Awaitable, Callable, Dict
 
 from aiogram import BaseMiddleware
 from aiogram.types import CallbackQuery, Message
-
 from utils import get_api_answer
 
 

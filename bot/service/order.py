@@ -1,7 +1,6 @@
 from http import HTTPStatus
 
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-
 from core.actions import order_action
 from core.factories import OrderCallbackFactory
 from logger import logger

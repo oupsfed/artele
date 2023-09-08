@@ -6,7 +6,6 @@ import shutil
 import pytest
 from aiogram.types import URLInputFile
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-
 from core.actions import food_action
 from service.food import (FOOD_COL, add_food_builder, admin_edit_food_builder,
                           encode_image, food_builder, food_info, menu_builder)

@@ -2,10 +2,9 @@ from aiogram import Router, types
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.filters import Text
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-from magic_filter import F
-
 from core import request_api
 from logger import logger
+from magic_filter import F
 from service.cart import CartCallbackFactory, cart_action, cart_builder
 from service.food import food_info
 from utils import get_api_answer

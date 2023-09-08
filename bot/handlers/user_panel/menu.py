@@ -2,10 +2,9 @@ from aiogram import Router, types
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.filters import Text
 from aiogram.fsm.context import FSMContext
-from magic_filter import F
-
 from core import request_api
 from logger import logger
+from magic_filter import F
 from middlewares.role import is_admin
 from service.food import (FoodCallbackFactory, food_action, food_builder,
                           food_info, menu_builder)
