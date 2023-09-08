@@ -36,6 +36,7 @@ FOOD_DATA = {
 
 CART_DATA = {
     "count": 1,
+    "page": 1,
     "next": None,
     "previous": None,
     "results": [

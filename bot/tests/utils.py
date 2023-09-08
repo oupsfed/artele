@@ -9,10 +9,10 @@ def check_paginator(paginators_btns, page):
     assert paginators_btns[1].text == '➡️', (
         'Кнопка вперед не существует или имеет неправильный текст'
     )
-    assert 'get_all' in callback_prev[1], (
+    assert 'list' in callback_prev[1], (
         'кнопка назад возвращает неправильную callback_data_action'
     )
-    assert 'get_all' in callback_next[1], (
+    assert 'list' in callback_next[1], (
         'кнопка вперед возвращает неправильную callback_data_action'
     )
     assert int(callback_prev[3]) == page - 1, (

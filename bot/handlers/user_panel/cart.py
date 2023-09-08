@@ -4,9 +4,9 @@ from aiogram.filters import Text
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from magic_filter import F
 
+from core import request_api
 from logger import logger
-from service.cart import (CartCallbackFactory, add_to_cart, cart_action,
-                          cart_builder, remove_from_cart)
+from service.cart import CartCallbackFactory, cart_action, cart_builder
 from service.food import food_info
 from utils import get_api_answer
 
@@ -18,8 +18,8 @@ MAIN_MESSAGE = 'Корзина:'
 @router.message(Text('Корзина'))
 async def menu(message: types.Message):
     user_id = message.from_user.id
-    cart = get_api_answer(
-        'cart/',
+    cart = request_api.get(
+        'api/cart/',
         params={
             'user': user_id,
         }).json()
@@ -42,14 +42,14 @@ async def callbacks_show_cart(
         callback_data: CartCallbackFactory
 ):
     user_id = callback.from_user.id
-    cart = get_api_answer(
-        'cart/',
+    cart = request_api.get(
+        'api/cart/',
         params={
             'user': user_id,
             'page': callback_data.page
         }).json()
-    total_price = get_api_answer(
-        f'cart/{user_id}/sum/'
+    total_price = request_api.get(
+        f'api/cart/{user_id}/sum/'
     ).json()
     builder = await cart_builder(
         json_response=cart,
@@ -96,13 +96,20 @@ async def callbacks_add_to_cart(
 ):
     user_id = callback.from_user.id
     food_id = callback_data.food_id
-    await add_to_cart(
-        user_id=user_id,
-        food_id=food_id
-    )
+    request_api.post('api/cart/',
+                     data={
+                         'user': user_id,
+                         'food': food_id
+                     }).json()
+    cart_data = request_api.get('api/cart/',
+                                params={
+                                    'user': user_id,
+                                    'page': callback_data.page
+                                }).json()
+    total_price = request_api.get(f'api/cart/{user_id}/sum').json()
     builder = await cart_builder(
-        user_id=callback.from_user.id,
-        page=callback_data.page
+        json_response=cart_data,
+        total_price=total_price['total']
     )
     await callback.message.edit_reply_markup(
         reply_markup=builder.as_markup()
@@ -114,15 +121,24 @@ async def callbacks_delete_from_cart(
         callback: types.CallbackQuery,
         callback_data: CartCallbackFactory
 ):
-    user = callback.from_user
+    user_id = callback.from_user.id
     food_id = callback_data.food_id
-    await remove_from_cart(
-        user.id,
-        food_id
-    )
+    cart = request_api.get('api/cart/',
+                           params={
+                               'user': user_id,
+                               'food': food_id
+                           }).json()
+    cart = cart['results'][0]
+    request_api.delete(f'api/cart/{cart["id"]}')
+    cart_data = request_api.get('api/cart/',
+                                params={
+                                    'user': user_id,
+                                    'page': callback_data.page
+                                }).json()
+    total_price = request_api.get(f'api/cart/{user_id}/sum').json()
     builder = await cart_builder(
-        user_id=callback.from_user.id,
-        page=callback_data.page
+        json_response=cart_data,
+        total_price=total_price['total']
     )
     try:
         await callback.message.edit_reply_markup(

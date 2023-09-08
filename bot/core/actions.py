@@ -2,12 +2,12 @@ class Action:
     get = 'get'
     create = 'create'
     remove = 'remove'
-    get_all = 'get_all'
+    get_all = 'list'
     update = 'update'
 
     def __init__(self,
                  callback_name):
-        self.callback = callback_name
+        self.callback = f'{callback_name}-'
         self.get = self.callback + self.get
         self.create = self.callback + self.create
         self.remove = self.callback + self.remove
@@ -18,16 +18,30 @@ class Action:
         return self.callback
 
 
-food_action = Action('food')
-food_action.create_preview = 'create_preview'
-food_action.update_preview = 'update_preview'
-food_action.update_column = 'update_column'
-food_action.remove_preview = 'remove_preview'
+class FoodAction(Action):
+    add_to_cart = 'add_t_c'
+    remove_from_cart = 'remove_f_c'
+    create_preview = 'c_preview'
+    update_preview = 'u_preview'
+    remove_preview = 'r_preview'
+    update_column = 'col_update'
 
 
-order_action = Action('order')
+class OrderAction(Action):
+    filter_by_user = 'f_b_u'
+    filter_by_food = 'f_b_f'
+    download = 'download'
+    done = 'done'
+    cancel = 'cancel'
 
-cart_action = Action('cart')
+
+class CartAction(Action):
+    pass
+
+
+food_action = FoodAction('food')
+order_action = OrderAction('order')
+cart_action = CartAction('cart')
 
 orders_list_actions = Action('ord_list')
 orders_list_actions.filter_by_user = 'by_user'
@@ -39,7 +53,6 @@ orders_list_actions.order_cancel = 'ord_cancel'
 user_list_actions = Action('user_list')
 user_list_actions.send_direct = 'send_direct'
 user_list_actions.send_to_all = 'send_to_all'
-
 
 access_action = Action('access')
 access_action.stop = 'stop'

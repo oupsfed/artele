@@ -4,12 +4,11 @@ from aiogram.filters import Text
 from aiogram.fsm.context import FSMContext
 from magic_filter import F
 
+from core import request_api
 from logger import logger
 from middlewares.role import is_admin
-from service.cart import add_to_cart, cart_action, remove_from_cart
 from service.food import (FoodCallbackFactory, food_action, food_builder,
                           food_info, menu_builder)
-from utils import get_api_answer
 
 router = Router()
 
@@ -18,10 +17,10 @@ MAIN_MESSAGE = 'Меню:'
 
 @router.message(Text('Меню'))
 async def menu(message: types.Message,
-               state: FSMContext,):
+               state: FSMContext, ):
     await state.clear()
     builder = await menu_builder(
-        get_api_answer('food/').json(),
+        request_api.get('api/food/').json(),
         admin=is_admin(message.from_user.id)
     )
     await message.answer(
@@ -36,16 +35,15 @@ async def callbacks_show_food(
         callback_data: FoodCallbackFactory
 ):
     user_id = callback.from_user.id
-    food = get_api_answer(f'food/{callback_data.id}/').json()
-    cart = get_api_answer('cart/',
-                          params={
-                              'user': user_id,
-                              'food': food['id']
-                          }).json()
+    food = request_api.get(f'/api/food/{callback_data.id}/').json()
+    cart = request_api.get('/api/cart/',
+                           params={
+                               'user': user_id,
+                               'food': food['id']
+                           }).json()
     food_data = await food_info(food)
     builder = await food_builder(cart=cart,
                                  food=food,
-                                 callback=callback_data.back,
                                  admin=is_admin(user_id))
     await callback.message.answer_photo(
         food_data['image'],
@@ -63,10 +61,10 @@ async def callbacks_show_page(
 ):
     await state.clear()
     builder = await menu_builder(
-        get_api_answer('food/',
-                       params={
-                           'page': callback_data.page
-                       }).json(),
+        request_api.get('api/food/',
+                        params={
+                            'page': callback_data.page
+                        }).json(),
         admin=is_admin(callback.from_user.id)
     )
     if callback.message.photo:
@@ -82,42 +80,48 @@ async def callbacks_show_page(
         )
 
 
-@router.callback_query(FoodCallbackFactory.filter(F.action == cart_action.create))
+@router.callback_query(FoodCallbackFactory.filter(F.action == food_action.add_to_cart))
 async def callbacks_add_to_cart(
         callback: types.CallbackQuery,
         callback_data: FoodCallbackFactory
 ):
     user_id = callback.from_user.id
     food_id = callback_data.id
-    await add_to_cart(
-        user_id=user_id,
-        food_id=food_id
-    )
+    cart = request_api.post('api/cart/',
+                            data={
+                                'user': user_id,
+                                'food': food_id
+                            }).json()
     builder = await food_builder(
-        user_id=user_id,
-        food_id=food_id,
-        page=callback_data.page
+        cart=cart,
+        food=cart['food'],
+        page=callback_data.page,
+        admin=is_admin(user_id)
     )
     await callback.message.edit_reply_markup(
         reply_markup=builder.as_markup()
     )
 
 
-@router.callback_query(FoodCallbackFactory.filter(F.action == cart_action.remove))
+@router.callback_query(FoodCallbackFactory.filter(F.action == food_action.remove_from_cart))
 async def callbacks_remove_from_cart(
         callback: types.CallbackQuery,
         callback_data: FoodCallbackFactory
 ):
-    user = callback.from_user
+    user_id = callback.from_user.id
     food_id = callback_data.id
-    await remove_from_cart(
-        user.id,
-        food_id
-    )
+    cart = request_api.get('api/cart/',
+                           params={
+                               'user': user_id,
+                               'food': food_id
+                           }).json()
+    cart = cart['results'][0]
+    cart = request_api.delete(f'api/cart/{cart["id"]}').json()
     builder = await food_builder(
-        callback.from_user.id,
-        food_id,
-        callback_data.page
+        cart=cart,
+        food=cart['food'],
+        page=callback_data.page,
+        admin=is_admin(user_id)
     )
     try:
         await callback.message.edit_reply_markup(

@@ -1,12 +1,4 @@
-from aiogram.filters.callback_data import CallbackData
-
-
-def encode_callback(back: CallbackData) -> str:
-    return back.pack().replace(':', '.')
-
-
-def decode_callback(back: str) -> str:
-    return back.replace('.', ':')
+from core import factories
 
 
 async def paginate_builder(json_response: dict,
@@ -37,9 +29,19 @@ async def paginate_builder(json_response: dict,
 
 
 async def back_builder(builder,
-                       callback):
+                       action,
+                       item_id: int = None):
+    callback_data = {
+        'food': factories.FoodCallbackFactory,
+    }
+    data = action.split('-')
+    callback = callback_data[data[0]](
+        action=action
+    )
+    if item_id:
+        callback.id = item_id
     builder.button(
         text='↩️',
-        callback_data=decode_callback(callback)
+        callback_data=callback
     )
     return builder

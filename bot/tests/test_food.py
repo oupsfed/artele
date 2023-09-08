@@ -7,6 +7,7 @@ import pytest
 from aiogram.types import URLInputFile
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
+from core.actions import food_action
 from service.food import (FOOD_COL, add_food_builder, admin_edit_food_builder,
                           encode_image, food_builder, food_info, menu_builder)
 
@@ -37,10 +38,10 @@ async def test_menu_builder():
         assert builder_data[food_number][0].text == expected_btn_txt, (
             'Неправильное название кнопок'
         )
-        assert callback_data[0] == 'food', (
+        assert callback_data[0] in str(food_action), (
             'Неправильный класс CallbackFactory'
         )
-        assert callback_data[1] == 'foodget', (
+        assert callback_data[1] == food_action.get, (
             'Неправильный food_action'
         )
         assert int(callback_data[2]) == food_id, (
@@ -54,11 +55,11 @@ async def test_menu_builder():
         'или имеет неправильный текст'
     )
     admin_callback = builder_data[-1][0].callback_data.split(':')
-    assert admin_callback[0] == 'food', (
+    assert callback_data[0] in str(food_action), (
         'Неправильный класс CallbackFactory '
         'у кнопки администратора "Добавить Товар"'
     )
-    assert admin_callback[1] == 'create_preview', (
+    assert admin_callback[1] == food_action.create_preview, (
         'Неправильный action '
         'у кнопки администратора "Добавить Товар"'
     )
@@ -82,7 +83,7 @@ async def test_food_info():
         'Текст сообщения не соответствует ожидаемому'
     )
     assert isinstance(food_data['image'], URLInputFile), (
-        'При отсутсвии изображения на товаре, '
+        'При отсутствии изображения на товаре, '
         'должно быть изображение по умолчанию'
     )
     food_data = await food_info(FOOD_DATA['results'][2])
@@ -119,11 +120,11 @@ async def test_food_builder():
         ('Удалить товар',),
     ]
     exp_action = [
-        ('cartcreate',),
-        ('cartremove', 'cartcreate'),
-        ('foodget_all',),
-        ('update_preview',),
-        ('remove_preview',),
+        (food_action.add_to_cart,),
+        (food_action.remove_from_cart, food_action.add_to_cart),
+        (food_action.get_all,),
+        (food_action.update_preview,),
+        (food_action.remove_preview,),
     ]
     exp_id = [
         (str(food['id']),),
@@ -141,7 +142,7 @@ async def test_food_builder():
                  'Не соответствует ожидаемому')
             )
             callback_data = btn.callback_data.split(':')
-            assert callback_data[0] == 'food', (
+            assert callback_data[0] in str(food_action), (
                 (f'Кнопка {btn.text}  не соответствует ожидаемому - '
                  'Неправильный класс CallbackFactory')
             )
@@ -187,16 +188,17 @@ async def test_edit_food_builder():
             'В ряду должна быть одна кнопка'
         )
         btn = builder_data[i][0]
+
         exp_text = f'Изменить {name}'
         assert btn.text == exp_text, (
             f'В кнопке {btn.text} неправильный текст'
         )
         callback_data = btn.callback_data.split(':')
-        assert callback_data[0] == 'food', (
+        assert callback_data[0] in str(food_action), (
             (f'Кнопка {btn.text}  не соответствует ожидаемому - '
              'Неправильный класс CallbackFactory')
         )
-        assert callback_data[1] == 'update_column', (
+        assert callback_data[1] == food_action.update_column, (
             (f'Кнопка {btn.text}  не соответствует ожидаемому - '
              'Неправильный food_action')
         )
@@ -215,15 +217,14 @@ async def test_edit_food_builder():
         i += 1
     back_btn = builder_data[-1][0]
     callback_data = back_btn.callback_data.split(':')
-    print(back_btn)
     assert back_btn.text == 'Назад', (
         f'В кнопке {back_btn.text} неправильный текст'
     )
-    assert callback_data[0] == 'food', (
+    assert callback_data[0] in str(food_action), (
         (f'Кнопка {back_btn.text}  не соответствует ожидаемому - '
          'Неправильный класс CallbackFactory')
     )
-    assert callback_data[1] == 'foodget', (
+    assert callback_data[1] == food_action.get, (
         (f'Кнопка {back_btn.text}  не соответствует ожидаемому - '
          'Неправильный food_action')
     )
@@ -253,11 +254,11 @@ async def test_add_food_builder():
     assert back_btn.text == 'Отмена', (
         f'В кнопке {back_btn.text} неправильный текст'
     )
-    assert callback_data[0] == 'food', (
+    assert callback_data[0] in str(food_action), (
         (f'Кнопка {back_btn.text}  не соответствует ожидаемому - '
          'Неправильный класс CallbackFactory')
     )
-    assert callback_data[1] == 'foodget_all', (
+    assert callback_data[1] == food_action.get_all, (
         (f'Кнопка {back_btn.text}  не соответствует ожидаемому - '
          'Неправильный food_action')
     )

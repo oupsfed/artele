@@ -5,9 +5,8 @@ from aiogram.types import URLInputFile
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from core.actions import food_action
-from core.builders import back_builder, encode_callback, paginate_builder
+from core.builders import back_builder, paginate_builder
 from core.factories import FoodCallbackFactory
-from service.cart import cart_action
 
 FOOD_COL = {
     'name': 'название',
@@ -39,17 +38,11 @@ async def menu_builder(json_response: dict,
         page = json_response['page']
     builder = InlineKeyboardBuilder()
     rows = []
-    back = encode_callback(
-        FoodCallbackFactory(
-            action=food_action.get_all
-        )
-    )
     for food in food_list:
         builder.button(
             text=f"{food['name']} - {food['price']} ₽",
             callback_data=FoodCallbackFactory(
                 action=food_action.get,
-                back=back,
                 page=page,
                 id=food['id'])
         )
@@ -99,7 +92,6 @@ async def food_info(food: dict) -> dict:
 
 async def food_builder(cart: dict,
                        food: dict,
-                       callback: str = 'food.foodget_all...1..',
                        page: int = 1,
                        admin: bool = False) -> InlineKeyboardBuilder:
     """
@@ -108,7 +100,6 @@ async def food_builder(cart: dict,
             Parameters:
                     cart (dict) : словарь ответа API корзины
                     food (bool) : словаь определенного товара
-                    callback (str) : строка callback_data для кнопки назад
                     page (int) : страница с которой перешли в карточку товара
                     admin (bool): подключать ли функции администратора
 
@@ -117,15 +108,18 @@ async def food_builder(cart: dict,
     """
     amount = 0
     food_price = food['price']
-    if len(cart['results']) > 0:
-        cart = cart['results'][0]
+    if 'results' in cart:
+        cart = cart['results']
+        if len(cart) > 0:
+            cart = cart[0]
+    if 'amount' in cart:
         amount = cart['amount']
     builder = InlineKeyboardBuilder()
     rows = []
     builder.button(
         text=f'{amount} шт. ({amount * food_price} ₽)',
         callback_data=FoodCallbackFactory(
-            action=cart_action.create,
+            action=food_action.add_to_cart,
             id=food['id']
         )
     )
@@ -133,21 +127,21 @@ async def food_builder(cart: dict,
     builder.button(
         text='➖',
         callback_data=FoodCallbackFactory(
-            action=cart_action.remove,
+            action=food_action.remove_from_cart,
             id=food['id']
         )
     )
     builder.button(
         text='➕',
         callback_data=FoodCallbackFactory(
-            action=cart_action.create,
+            action=food_action.add_to_cart,
             id=food['id']
         )
     )
     rows.append(2)
     builder = await back_builder(
         builder,
-        callback
+        food_action.get_all,
     )
     rows.append(1)
     if admin:
