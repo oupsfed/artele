@@ -2,6 +2,7 @@ import asyncio
 import base64
 import os
 import shutil
+from pathlib import Path
 
 import pytest
 from aiogram.types import URLInputFile
@@ -269,8 +270,9 @@ async def test_add_food_builder():
 
 @pytest.mark.asyncio
 async def test_download_encode_image():
-    main_image = 'tests/fixtures/test_image.png'
-    tmp_image = 'tests/fixtures/tmp.png'
+    base_dir = Path(__file__).resolve().parent.parent
+    main_image = f'{base_dir}/tests/fixtures/test_image.png'
+    tmp_image = f'{base_dir}/tests//fixtures/tmp.png'
     shutil.copy2(main_image, tmp_image)
     encode_data = await encode_image(tmp_image)
     assert isinstance(encode_data, str), (
